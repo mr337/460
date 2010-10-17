@@ -1,0 +1,11 @@
+All of this is just me thinking and is open for change.
+
+1. This server client will be set as a Two-tier modular client architecture.
+
+2. What I will provide is an API for communicating with the server.
+The API will use a struct to communicate with the server. This struct will be passed to most of the API calls and will be used as the transport bucket.
+
+
+NOTE: Most of the code will be used for my (Lee) testing to ensure the server works.
+
+
