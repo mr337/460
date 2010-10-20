@@ -1,0 +1,168 @@
+
+Assume an 80x24 window.  It's possible to query the size of the actual
+terminal window, and to be notified when the terminal is resized, but
+that would have to be implemented in the client (because different
+clients could have different terminal sizes).  We want the clients to
+be dumb and have the server just tell them what to update, which will
+be easier if the server can assume that all terminals are the same
+size.  You can implement arbitrary terminal sizes as an extension if
+you want.
+
+SCREEN LAYOUT
+
+    See below.
+
+KEYS
+
+    A design goal is that the interface should not require any special
+    keys other than Ctrl, and all functionality must be available
+    without entering special commands in the text window.  If you want
+    to allow the use of arrow keys, home/end, pgup/pgdn, function
+    keys, etc., you can do so as an extension: all such keys are
+    represented by a character sequence starting with Ctrl-[ (ESC).
+
+REQUIRED COMMAND KEYS
+
+    Ctrl-^: (Ctrl-6) deep-six!
+    Ctrl-]: resume transcript at end
+    Ctrl-G: gaudy! toggle gaudy (emphasized) text
+    Ctrl-H: (BKSP) delete previous char
+    Ctrl-J: (ENTER)
+    Ctrl-L: lurk!
+    Ctrl-M: (RETURN) treat the same as Ctrl-J
+    Ctrl-N: scroll down to next page in transcript
+    Ctrl-P: scroll up to previous page in transcript
+    Ctrl-Q: quit the program
+    Ctrl-U: delete to beginning of text
+    Ctrl-W: delete previous word (including any trailing spaces)
+    Ctrl-Y: yell!
+
+OPTIONAL EDITING KEYS
+
+    You don't have to implement any of these, but you can't use them
+    for any other purpose.
+
+    Ctrl-@: (Ctrl-SPC) toggle marking text
+    Ctrl-A: go to beginning of text
+    Ctrl-B: go backward one char
+    Ctrl-C: copy marked region and turn off marking
+    Ctrl-D: delete char at cursor
+    Ctrl-E: go to end of text
+    Ctrl-F: go forward one char
+    Ctrl-K: kill to end of text
+    Ctrl-R: reverse (backward) search for next character typed
+    Ctrl-S: (forward) search for next character typed
+    Ctrl-V: paste
+    Ctrl-X: cut marked region and turn off marking
+
+    Searching for Ctrl-@/Ctrl-SPC (a null character) is equivalent to
+    searching for SPC; searching for SPC always succeeds, going to the
+    beginning or end of the line if necessary.  So Ctrl-S Ctrl-SPC is
+    the same as "go to next word", and Ctrl-R Ctrl-SPC is the same as
+    "go to previous word".
+
+RESERVED KEYS (FOR EXTENSIONS)
+
+    Ctrl-[ (ESC): prefix for function keys, arrow keys, etc.
+    Ctrl-I (TAB)
+    Ctrl-O, Ctrl-T, Ctrl-Z, Ctrl-\, Ctrl-_
+
+Client sends NAME/MAJOR-VERSION/MINOR-VERSION to server on connect,
+server responds with similar, so that extra features can be enabled.
+
+WINDOW LAYOUT (horizontal width shown is 50% of normal)
+
+    P = 40x3 program info bar (name, version, etc.)
+    * = 40x23 linear transcript window; scrolls vertically
+    S = 40x2 user status/help bar
+    E = 80x1 user editing window (scrolls horizontally)
+    0-9 = 20x2 real-time status/typing windows, one per user
+    - = separator lines
+
+    ********************PPPPPPPPPPPPPPPPPPPP
+    ********************PPPPPPPPPPPPPPPPPPPP
+    ********************PPPPPPPPPPPPPPPPPPPP
+    ********************
+    ********************0000000000----------
+    ********************00000000005555555555
+    ********************----------5555555555
+    ********************1111111111----------
+    ********************11111111116666666666
+    ********************----------6666666666
+    ********************2222222222----------
+    ********************22222222227777777777
+    ********************----------7777777777
+    ********************3333333333----------
+    ********************33333333338888888888
+    ********************----------8888888888
+    ********************4444444444----------
+    ********************44444444449999999999
+    ********************----------9999999999
+    ********************
+    ********************SSSSSSSSSSSSSSSSSSSS
+    ********************SSSSSSSSSSSSSSSSSSSS
+    ********************SSSSSSSSSSSSSSSSSSSS
+    EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+
+DEEP-SIX MODE
+
+    Entered by pressing Ctrl-^ (or Ctrl-6, which is the same key).
+    Displays a pop-up window listing all online users who you have not
+    deep-sixed already, plus a message saying to press any other key
+    to exit.  The users are numbered 0-9.  Pressing a number
+    corresponding to a user adds a "deep-six" vote for that user and
+    adds a message to the transcript, like "bob deep-sixed larry".
+    Pressing any other key does not send a vote.  Any keypress closes
+    the window.  Deep-six votes are displayed in the status line for
+    each user.  If you quit the program, all deep-six votes you made
+    are removed.  If a user gets deep-six votes equal to a majority
+    (more than half) of the users online, that user is ejected.  A
+    line such as "larry has been ejected" is added to the transcript.
+    The ejected user sees a pop-up window that lasts five seconds
+    notifying him or her of ejection, then the program terminates;
+    during the five-second period no keypresses are recognized.
+
+GAUDY MODE
+
+    Toggled by pressing Ctrl-G.  Displays text in "gaudy" mode, which
+    is meant to represent boldfacing or emphasis.  To represent gaudy
+    mode in a string, I suggest using the ASCII STX (start of text)
+    and ETX (end of text) characters, which have codes 2 and 3.  When
+    you display a string, don't display these characters, but toggle
+    gaudy display.  When editing, backspacing over an ETX should also
+    delete the character preceding it; when backspacing over any other
+    character, see if an STX precedes it, and if so, delete it too.
+    You can decide how to display gaudy text, but it must be readable.
+
+SCROLLING THE TRANSCRIPT
+
+    After hitting a scroll key (Ctrl-N or Ctrl-P), the transcript is
+    "frozen"; new transcript lines must be accepted from the server,
+    but they are not displayed in the transcript window.  The
+    status/help window must display that Ctrl-] resumes the
+    transcript.  After pressing a scroll key, if another scroll key is
+    not pressed within five seconds, the transcript automatically
+    resumes.
+
+LURK MODE
+
+    Entered by pressing Ctrl-L.  Displays a pop-up window covering the
+    editing area that says "Lurking..." and that says you can press
+    Ctrl-L to quit lurking or Ctrl-Q to quit the program.  While
+    lurking, all displays continue to update, but you can't do
+    anything.  Your status changes to LURKING.
+
+YELL MODE
+
+    Entered by pressing Ctrl-Y.  Displays a pop-up window with a list
+    of predefined messages, labelled A, B, C, ..., Z, plus a line
+    saying to press any other key to exit.  (Thus there can be at most
+    26 messages, but you don't have to have that many.  The messages
+    are defined by the server, not the user.)  Pressing the letter
+    corresponding to a message closes the window and immediately sends
+    that message to the transcript, without changing your status or
+    editing area.  Pressing any other key closes the window without
+    sending anything.  [Use your creativity in designing the messages,
+    but they must include at least one phrase that expresses agreement
+    ("I agree", "ditto", etc.) and one that expresses disagreement ("I
+    disagree", "no way", etc.)  Keep the messages PG-13.]
