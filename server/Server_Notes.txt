@@ -1,0 +1,29 @@
+
+Server need to:
+Make sure only X amount of clients connect
+Keep count of online users
+Hold DeepSix elections
+
+
+Recieve struct (Name/MAJORVERSION/MINORVERSION)
+
+
+Proposed Structs:
+
+NOTE: This is to be used only during connection, one established will use Chat struct
+Connect(
+string username
+int major-version
+int minor-version
+sAddr ipaddress????
+
+)
+
+NOTE: Client is in charge of encoding emp or bold in message, NOT THE SERVER
+Chat(
+string originator
+int status - status bits will be defined later
+string message
+)
+
+
