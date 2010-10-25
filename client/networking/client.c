@@ -1,9 +1,9 @@
-
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <string.h>
+#include "networking.c"
 
 void child_func(int childnum);
 
@@ -39,9 +39,6 @@ void child_func(int childnum)
     struct sockaddr_in sAddr;
     char buffer[25];
 
-    memset((void*) &sAddr, 0, sizeof(struct sockaddr_in));
-    sAddr.sin_family = AF_INET;
-    sAddr.sin_addr.s_addr = INADDR_ANY;
     sAddr.sin_port = 0;
 
     sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -58,9 +55,9 @@ void child_func(int childnum)
 
     snprintf(buffer, 128, "data from client #%i", childnum);
     sleep(1);
-    printf("child #%i sent %i chars\n", childnum, send(sock, buffer, strlen(buffer),0));
+    printf("child #%i sent %i chars\n", childnum, sendMessage(buffer);
     sleep(1);
-    printf("child #%i recieved %i chars\n", childnum, recv(sock, buffer, 25, 0));
+    printf("child #%i recieved %i chars\n", childnum, receiveMessage());
     sleep(1);
-    close(sock);
+
 }
