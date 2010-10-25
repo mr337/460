@@ -8,4 +8,6 @@ The API will use a struct to communicate with the server. This struct will be pa
 
 NOTE: Most of the code will be used for my (Lee) testing to ensure the server works.
 
+The final client code will be in the client/client, the code here is the networking API but will also have client testing code for me
+
 
