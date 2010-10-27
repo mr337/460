@@ -5,6 +5,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <pthread.h>
+#include <string.h>
 
 void* thread_proc(void *arg);
 
@@ -50,6 +51,7 @@ int main(int argc, char *argv[])
 
     while(1)
     {
+        printf("Server now waiting for client.....\n");
         newsock = accept(listensock, NULL, NULL);
 
         result = pthread_create(&thread_id, NULL, thread_proc, (void*) newsock);
@@ -68,17 +70,20 @@ void* thread_proc(void *arg)
 {
     int sock;
     char buffer[25];
+    char response[25] = "How are you string: ";
     int nread;
 
-    printf("child thread %i with pid %i\n", pthread_self(), getpid());
+    printf("child thread %i started with pid %i\n", pthread_self(), getpid());
 
     sock = (int) arg;
 
     nread = recv(sock, buffer, 25, 0);
+
     buffer[nread] = '\0';
+    strcat(response, buffer);
     printf("%s\n", buffer);
-    send(sock, buffer, nread, 0);
+    send(sock, response, strlen(response), 0);
     close(sock);
 
-    printf("child thred %i finidhed with pid %i", pthread_self(), getpid());
+    printf("child thred %i finished with pid %i\n", pthread_self(), getpid());
 }

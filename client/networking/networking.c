@@ -3,7 +3,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <string.h>
-#include "client.h"
+#include "networking.h"
 
 //connStatus, 1 = connected, 0 = disconnected
 int connStatus;
@@ -15,7 +15,7 @@ int connectToServer(char * ipAddress, int port)
     struct sockaddr_in sAddr;
     memset((void*) &sAddr, 0, sizeof(struct sockaddr_in));
     sAddr.sin_family = AF_INET;
-    sAddr.sin_addr.s_addr = ANADDR_ANY;
+    sAddr.sin_addr.s_addr = INADDR_ANY;
     sAddr.sin_port = 0;
 
     sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -42,7 +42,7 @@ int isConnected()
     return connStatus;
 }
 
-int closeServer();
+int closeServer()
 {
     return close(sock);
 
@@ -50,14 +50,12 @@ int closeServer();
 
 int sendMessage(char * message)
 {//this is only for testing
-    return send(sock, message, strlen(message));
+    return send(sock, message, strlen(message),0);
 }
 
-char * receiveMessage()
+void receiveMessage(char * buffer)
 {//this is only for testing
-    char rec[25];
-    recv(sock, rec, 25,0);
-    return &rec;
+    recv(sock, buffer, 25,0);
 }
 
 

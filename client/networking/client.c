@@ -35,29 +35,25 @@ int main(int argc, char * argv[])
 
 void child_func(int childnum)
 {
-    int sock;
-    struct sockaddr_in sAddr;
     char buffer[25];
 
-    sAddr.sin_port = 0;
-
-    sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    bind(sock, (const struct sockaddr*) &sAddr, sizeof(sAddr));
-
-    sAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
-    sAddr.sin_port = htons(5000);
-
-    if(connect(sock, (const struct sockaddr *) &sAddr, sizeof(sAddr)) != 0)
+    connectToServer("127.0.0.1",5000);
+    if(isConnected()!= 1)
     {
-        perror("client");
-        return;
+        perror("Error connecting to client\n");
     }
 
-    snprintf(buffer, 128, "data from client #%i", childnum);
+    
+    snprintf(buffer, 128, "%i", childnum);
     sleep(1);
-    printf("child #%i sent %i chars\n", childnum, sendMessage(buffer);
+    printf("child #%i sent %i chars\n", childnum, sendMessage(buffer));
     sleep(1);
-    printf("child #%i recieved %i chars\n", childnum, receiveMessage());
+
+    char buf[25];
+    receiveMessage(buf);
+    printf("child #%i recieved %s \n", childnum, buf);
     sleep(1);
+
+    closeServer();
 
 }
