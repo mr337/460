@@ -1,5 +1,5 @@
-
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -9,8 +9,31 @@
 
 void* thread_proc(void *arg);
 
+int maxUsers;
+int numUsers;
+
 int main(int argc, char *argv[])
 {
+
+    if(argc != 3)
+    {
+        printf("Must be in format: server port Max_Clients");
+    }
+
+    //get info from CL
+    int port = atoi(argv[1]);
+    maxUsers = atoi(argv[2]);
+
+    if(port == 0 || maxUsers == 0)
+    {
+        perror("Port or MaxUsers must be greater than 0");
+    }
+    
+
+    //print stats
+    printf("Starting server\nPort: %i\nMax Users of: %i\n", port, maxUsers);
+
+
     struct sockaddr_in sAddr;
     int listensock;
     int newsock;
@@ -30,7 +53,7 @@ int main(int argc, char *argv[])
 
 
     sAddr.sin_family = AF_INET;
-    sAddr.sin_port = htons(5000);
+    sAddr.sin_port = htons(port);
     sAddr.sin_addr.s_addr = INADDR_ANY;
 
     result = bind(listensock, (struct sockaddr*) &sAddr, sizeof(sAddr));
@@ -60,6 +83,8 @@ int main(int argc, char *argv[])
             perror("server");
         }
 
+        numUsers++;
+
         pthread_detach(thread_id);
         sched_yield();
     }
@@ -77,6 +102,11 @@ void* thread_proc(void *arg)
 
     sock = (int) arg;
 
+    if(numUsers > maxUsers)
+    {//to many users
+    }
+
+
     nread = recv(sock, buffer, 25, 0);
 
     buffer[nread] = '\0';
@@ -84,6 +114,7 @@ void* thread_proc(void *arg)
     printf("%s\n", buffer);
     send(sock, response, strlen(response), 0);
     close(sock);
+    numUsers--;
 
     printf("child thred %i finished with pid %i\n", pthread_self(), getpid());
 }
