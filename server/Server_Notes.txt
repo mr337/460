@@ -1,3 +1,4 @@
+Updated 10/27/2010
 
 Server need to:
 Make sure only X amount of clients connect
@@ -19,10 +20,17 @@ sAddr ipaddress????
 
 )
 
+ConenctACK(
+int Status //0 means OK, 1 means have some username and pick a new one, 2 means too full, try gain later
+int id // this is the server ID that is given to the client
+)
+
+
 NOTE: Client is in charge of encoding emp or bold in message, NOT THE SERVER
 Chat(
 string originator
 int status - status bits will be defined later
+int message length //this will allow the message to be as long as possible and for TCP to do the backwork of breaking it up
 string message
 )
 

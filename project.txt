@@ -1,3 +1,6 @@
+CSC 460 - Fall 2010 Project
+Interactive Real-time Multi-window Chat
+Time-stamp: <2010-10-27 12:22:31 shade>
 
 Assume an 80x24 window.  It's possible to query the size of the actual
 terminal window, and to be notified when the terminal is resized, but
@@ -8,9 +11,39 @@ be easier if the server can assume that all terminals are the same
 size.  You can implement arbitrary terminal sizes as an extension if
 you want.
 
+ARCHITECTURE
+
+    The server must be multithreaded, with one thread per client
+    connection.  You may use additional threads if you you want.  The
+    updates must be as close to real-time as possible, and the time
+    updates must be as accurate as possible.  You should design your
+    wire protocol to minimize network traffic, keeping in mind that
+    the minimum network packet size is 64 bytes.  (So it's better to
+    send one 60-byte message than 10 six-byte messages.)
+
+    You will need to use alarm for the time updates (ualarm is only
+    good for sub-second time intervals).  For all other updates, it's
+    probably better to use semaphores or some other inter-thread
+    communication mechanism.
+
+    UNDER NO CIRCUMSTANCES MAY THE SERVER OR CLIENT BUSY-WAIT!
+
 SCREEN LAYOUT
 
     See below.
+
+    Each user window must display the amount of time the user has been
+    connected in minutes, to the nearest tenth (a tenth of a minute is
+    six seconds, of course): something like "12.4m"
+
+    The program status window must also display the number of minutes
+    that the chat has been active, using the same format.  It must
+    also display the total amount of "traffic", rounded to the nearest
+    kilobyte.  You can use a metric kilo (10^3), or a binary kilo
+    (2^10).  "Traffic" is some reasonable measure of the amount of
+    data transferred: it could be total number of keypresses, total
+    bytes sent to the transcript window (for one user), total network
+    traffic (for one user), etc.
 
 KEYS
 
