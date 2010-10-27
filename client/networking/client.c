@@ -9,7 +9,7 @@ void child_func(int childnum);
 
 int main(int argc, char * argv[])
 {
-    int nchildren = 20000;
+    int nchildren;
     int pid;
     int x;
 

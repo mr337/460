@@ -77,13 +77,13 @@ int main(int argc, char *argv[])
         printf("Server now waiting for client.....\n");
         newsock = accept(listensock, NULL, NULL);
 
+        numUsers++;
         result = pthread_create(&thread_id, NULL, thread_proc, (void*) newsock);
         if(result != 0)
         {
             perror("server");
         }
 
-        numUsers++;
 
         pthread_detach(thread_id);
         sched_yield();
@@ -98,12 +98,13 @@ void* thread_proc(void *arg)
     char response[25] = "How are you string: ";
     int nread;
 
-    printf("child thread %i started with pid %i\n", pthread_self(), getpid());
+    //printf("child thread %i started with pid %i\n", pthread_self(), getpid());
 
     sock = (int) arg;
 
     if(numUsers > maxUsers)
     {//to many users
+        printf("you have too many users Current Users: %i\n",numUsers);
     }
 
 
@@ -116,5 +117,5 @@ void* thread_proc(void *arg)
     close(sock);
     numUsers--;
 
-    printf("child thred %i finished with pid %i\n", pthread_self(), getpid());
+    //printf("child thred %i finished with pid %i\n", pthread_self(), getpid());
 }
