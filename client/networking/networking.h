@@ -11,7 +11,7 @@ typedef struct
 
 typedef struct
 {
-    int stats; //see notes below
+    int status; //see notes below
     int id; //this is the id the server will give to client
 }ConnectACK;
 
@@ -29,6 +29,7 @@ int closeServer();
 int sendMessage(char *);
 void receiveMessage(char *);
 int sendConnectInit(ConnectInit *);
+struct ConnectAck * getACK();
 
 
 //ConnectACK notes

@@ -101,18 +101,27 @@ void* thread_proc(void *arg)
 
     sock = (int) arg;
 
-    if(numUsers > maxUsers)
-    {//to many users
-        printf("you have too many users Current Users: %i\n",numUsers);
-    }
 
     //the ConnectINIT part
     recv(sock, buffer, sizeof(ConnectInit), 0);
     ConnectInit * cI = &buffer;
     char * name = cI->userName;
     printf("Username:%s  Major Version: %i    Minor Version: %i\n",name, cI->majorVersion, cI->minorVersion);
+        
+    ConnectACK ack;
+    if(numUsers > maxUsers)
+    {//to many users
+        printf("you have too many users Current Users: %i\n",numUsers);
+        ack.id = 0;
+        ack.status = 1;
+    }
+    else
+    {
+        ack.id = numUsers;
+        ack.status = 0;
+    }
 
-    //send(sock, response, strlen(response), 0);
+    send(sock, &ack, sizeof(ConnectACK), 0);
 
 
     //quiting code

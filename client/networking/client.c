@@ -52,7 +52,10 @@ void child_func(int childnum)
     cI.minorVersion = 9;
     sendConnectInit(&cI);
 
-
+    //wait for ConnectACK for id and such
+    sleep(1);
+    ConnectACK* ack = getACK();
+    printf("Recieved ID: %i  Status:%i\n", ack->id, ack->status);
 
     closeServer();
 

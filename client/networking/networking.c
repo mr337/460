@@ -53,6 +53,14 @@ int sendConnectInit(ConnectInit * cI)
     return send(sock, cI, sizeof(ConnectInit), 0);
 }
 
+struct ConnectAck *getACK()
+{
+    char buffer[sizeof(ConnectACK)];
+    recv(sock, buffer, sizeof(ConnectACK),0);
+    ConnectACK * ack = &buffer;
+    return ack;
+}
+
 int sendMessage(char * message)
 {//this is only for testing
     return send(sock, message, strlen(message),0);
