@@ -6,6 +6,7 @@
 #include <netinet/in.h>
 #include <pthread.h>
 #include <string.h>
+#include "../client/networking/networking.h"
 
 void* thread_proc(void *arg);
 
@@ -93,9 +94,8 @@ int main(int argc, char *argv[])
 void* thread_proc(void *arg)
 {
     int sock;
-    char buffer[25];
+    char buffer[sizeof(ConnectInit)];
     char response[25] = "How are you string: ";
-    int nread;
 
     //printf("child thread %i started with pid %i\n", pthread_self(), getpid());
 
@@ -106,13 +106,16 @@ void* thread_proc(void *arg)
         printf("you have too many users Current Users: %i\n",numUsers);
     }
 
+    //the ConnectINIT part
+    recv(sock, buffer, sizeof(ConnectInit), 0);
+    ConnectInit * cI = &buffer;
+    char * name = cI->userName;
+    printf("Username:%s  Major Version: %i    Minor Version: %i\n",name, cI->majorVersion, cI->minorVersion);
 
-    nread = recv(sock, buffer, 25, 0);
+    //send(sock, response, strlen(response), 0);
 
-    buffer[nread] = '\0';
-    strcat(response, buffer);
-    printf("%s\n", buffer);
-    send(sock, response, strlen(response), 0);
+
+    //quiting code
     close(sock);
     numUsers--;
 

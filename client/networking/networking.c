@@ -48,6 +48,11 @@ int closeServer()
 
 }
 
+int sendConnectInit(ConnectInit * cI)
+{
+    return send(sock, cI, sizeof(ConnectInit), 0);
+}
+
 int sendMessage(char * message)
 {//this is only for testing
     return send(sock, message, strlen(message),0);

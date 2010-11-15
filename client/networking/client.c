@@ -35,24 +35,24 @@ int main(int argc, char * argv[])
 
 void child_func(int childnum)
 {
-    char buffer[25];
 
+    //connecto to server
     connectToServer("127.0.0.1",5000);
     if(isConnected()!= 1)
     {
         perror("Error connecting to client\n");
     }
 
-    
-    snprintf(buffer, 128, "%i", childnum);
-    sleep(1);
-    printf("child #%i sent %i chars\n", childnum, sendMessage(buffer));
-    sleep(1);
 
-    char buf[25];
-    receiveMessage(buf);
-    printf("child #%i recieved %s \n", childnum, buf);
-    sleep(1);
+    //code to init the server with details
+    ConnectInit cI;
+    char * name = &cI.userName;
+    strcpy(name,"Lee\0");    
+    cI.majorVersion = 1;
+    cI.minorVersion = 9;
+    sendConnectInit(&cI);
+
+
 
     closeServer();
 
