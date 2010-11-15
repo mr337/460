@@ -17,7 +17,8 @@ int main(int argc, char *argv[])
 
     if(argc != 3)
     {
-        printf("Must be in format: server port Max_Clients");
+        printf("Must be in format: server port Max_Clients\n");
+        exit(EXIT_SUCCESS);
     }
 
     //get info from CL
@@ -28,11 +29,9 @@ int main(int argc, char *argv[])
     {
         perror("Port or MaxUsers must be greater than 0");
     }
-    
 
     //print stats
     printf("Starting server\nPort: %i\nMax Users of: %i\n", port, maxUsers);
-
 
     struct sockaddr_in sAddr;
     int listensock;
