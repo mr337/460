@@ -6,21 +6,31 @@
 #include <netinet/in.h>
 #include <pthread.h>
 #include <string.h>
+#include <semaphore.h>
 #include "../client/networking/networking.h"
 
 void* thread_proc(void *arg);
 
 int maxUsers;
 int numUsers;
+int totalUsers;
+
+sem_t users;
 
 int main(int argc, char *argv[])
 {
+
+    numUsers = 0;
+    totalUsers = 0;
 
     if(argc != 3)
     {
         printf("Must be in format: server port Max_Clients\n");
         exit(EXIT_SUCCESS);
     }
+
+    //init semaphore
+    sem_init(&users,0,1);
 
     //get info from CL
     int port = atoi(argv[1]);
@@ -74,10 +84,10 @@ int main(int argc, char *argv[])
 
     while(1)
     {
-        printf("Server now waiting for client.....\n");
+        printf("SERVER: Now Accepting Clients \n");
+
         newsock = accept(listensock, NULL, NULL);
 
-        numUsers++;
         result = pthread_create(&thread_id, NULL, thread_proc, (void*) newsock);
         if(result != 0)
         {
@@ -94,39 +104,58 @@ int main(int argc, char *argv[])
 void* thread_proc(void *arg)
 {
     int sock;
+    int id=0;
     char buffer[sizeof(ConnectInit)];
     char response[25] = "How are you string: ";
 
-    //printf("child thread %i started with pid %i\n", pthread_self(), getpid());
-
     sock = (int) arg;
+
+    //test if there are too many users    
+    if(numUsers >= maxUsers)
+    {
+        recv(sock, buffer, sizeof(ConnectInit), 0);
+        ConnectInit * cI = &buffer;
+        char * name = cI->userName;
+        printf("UserID : %i  Username:%s  Current Users: %i\n", id, name, numUsers);
+            
+        ConnectACK ack;
+        printf("WARNING you have too many users Current Users: %i\n",numUsers);
+        ack.id = 0;
+        ack.status = 1;
+        send(sock, &ack, sizeof(ConnectACK), 0);
+
+        close(sock);
+        pthread_exit(0); 
+    }
+
+    //if(username Already Exists)
+    //{
+    //}
+    
+    numUsers++;
+    totalUsers++;
+    id = totalUsers;
 
 
     //the ConnectINIT part
     recv(sock, buffer, sizeof(ConnectInit), 0);
     ConnectInit * cI = &buffer;
     char * name = cI->userName;
-    printf("Username:%s  Major Version: %i    Minor Version: %i\n",name, cI->majorVersion, cI->minorVersion);
+    printf("UserID : %i  Username:%s  Current Users: %i\n", id, name, numUsers);
         
     ConnectACK ack;
-    if(numUsers > maxUsers)
-    {//to many users
-        printf("you have too many users Current Users: %i\n",numUsers);
-        ack.id = 0;
-        ack.status = 1;
-    }
-    else
-    {
-        ack.id = numUsers;
-        ack.status = 0;
-    }
+    ack.id = totalUsers;
+    ack.status = 0;
 
     send(sock, &ack, sizeof(ConnectACK), 0);
 
-
+    sleep(1);
     //quiting code
     close(sock);
     numUsers--;
 
+    printf("User id: %i disconnected, Remaining Users: %i\n", id, numUsers);
+
+    
     //printf("child thred %i finished with pid %i\n", pthread_self(), getpid());
 }

@@ -20,6 +20,7 @@ int main(int argc, char * argv[])
 
     for(x = 0; x < nchildren; x++)
     {
+        //sleep(1);
         if((pid = fork()) == 0)
         {
             child_func(x+1);
