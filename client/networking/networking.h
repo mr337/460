@@ -1,9 +1,11 @@
 //header file needed for networking.c
 //
 
+#define UNAMELENGTH 30
+
 typedef struct
 {
-    char * userName[30];
+    char * userName[UNAMELENGTH];
     int majorVersion;
     int minorVersion;
     //maybe add sAddr so we can read that for the address of server

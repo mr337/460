@@ -14,14 +14,13 @@ void* thread_proc(void *arg);
 int maxUsers;
 int numUsers;
 int totalUsers;
-
+char **userNames;
 sem_t users;
 
 int main(int argc, char *argv[])
 {
 
-    numUsers = 0;
-    totalUsers = 0;
+    char master_array[maxUsers];
 
     if(argc != 3)
     {
@@ -29,8 +28,6 @@ int main(int argc, char *argv[])
         exit(EXIT_SUCCESS);
     }
 
-    //init semaphore
-    sem_init(&users,0,1);
 
     //get info from CL
     int port = atoi(argv[1]);
@@ -41,8 +38,23 @@ int main(int argc, char *argv[])
         perror("Port or MaxUsers must be greater than 0");
     }
 
+    //init 
+    sem_init(&users,0,1);
+    numUsers = 0;
+    totalUsers = 0;
+
+    //init of array of strings
+    userNames = malloc(maxUsers * sizeof(char *));
+    int i = 0;
+    for(i=0; i< maxUsers; i++)
+    {
+        userNames[i] = malloc(UNAMELENGTH * sizeof(char));
+        userNames[i] = "\0";
+    }
+
+
     //print stats
-    printf("Starting server\nPort: %i\nMax Users of: %i\n", port, maxUsers);
+    printf("Starting server\nPort: %i\nMax Users of: %i\nMax UserName Length: %i\n", port, maxUsers, UNAMELENGTH);
 
     struct sockaddr_in sAddr;
     int listensock;
@@ -109,8 +121,7 @@ void* thread_proc(void *arg)
 
     sock = (int) arg;
 
-    //test if there are too many users    
-    printf("NumUsers: %i    Max Users: %i\n", numUsers, maxUsers);
+    //handle if there are too many users    
     if(numUsers >= maxUsers)
     {
         recv(sock, buffer, sizeof(ConnectInit), 0);
