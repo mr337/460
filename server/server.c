@@ -9,13 +9,17 @@
 #include <semaphore.h>
 #include "../client/networking/networking.h"
 
+//prototypes
 void* thread_proc(void *arg);
+int setUserName(char * name);
+int checkDupUserName(char * name);
 
 int maxUsers;
 int numUsers;
 int totalUsers;
 char **userNames;
-sem_t users;
+int * userStatus;
+sem_t lusers;
 
 int main(int argc, char *argv[])
 {
@@ -39,19 +43,19 @@ int main(int argc, char *argv[])
     }
 
     //init 
-    sem_init(&users,0,1);
+    sem_init(&lusers,0,1);
     numUsers = 0;
     totalUsers = 0;
+    userStatus = malloc(maxUsers * sizeof(int));
 
-    //init of array of strings
+    //init of arruoay of strings
     userNames = malloc(maxUsers * sizeof(char *));
     int i = 0;
     for(i=0; i< maxUsers; i++)
     {
         userNames[i] = malloc(UNAMELENGTH * sizeof(char));
-        userNames[i] = "\0";
+        strcpy(userNames[i],"\0");
     }
-
 
     //print stats
     printf("Starting server\nPort: %i\nMax Users of: %i\nMax UserName Length: %i\n", port, maxUsers, UNAMELENGTH);
@@ -109,8 +113,15 @@ int main(int argc, char *argv[])
 
         pthread_detach(thread_id);
         sched_yield();
+
+        //test code
+        for(i=0; i<maxUsers; i++)
+        {
+            printf("Userid: %i    Name: %s\n",i, userNames[i]);
+        }
     }
 
+    return(EXIT_SUCCESS);
 }
 
 void* thread_proc(void *arg)
@@ -137,23 +148,29 @@ void* thread_proc(void *arg)
         pthread_exit(0); 
     }
 
-    //if(username Already Exists)
-    //{
-    //}
    
-    sem_wait(&users); 
-    numUsers++;
-    totalUsers++;
-    id = totalUsers;
-    sem_post(&users);
-
-
     //the ConnectINIT part
     recv(sock, buffer, sizeof(ConnectInit), 0);
     ConnectInit * cI = &buffer;
     char * name = cI->userName;
+
+    if(checkDupUserName(name))
+    {
+        printf("ERROR: duplicate username found\n");
+    }
+    
+    sem_wait(&lusers); 
+    numUsers++;
+    totalUsers++;
+    id = setUserName(name);
+    if(id == -1)
+    {
+        printf("Error getting an ID for user\n");
+    }
+    sem_post(&lusers);
+
     printf("UserID : %i  Username:%s  Current Users: %i\n", id, name, numUsers);
-        
+
     ConnectACK ack;
     ack.id = totalUsers;
     ack.status = 0;
@@ -164,9 +181,39 @@ void* thread_proc(void *arg)
 
     //quiting code
     close(sock);
-    sem_wait(&users);
+    sem_wait(&lusers);
     numUsers--;
-    sem_post(&users);
+    strcpy(userNames[id], "\0");
+    sem_post(&lusers);
 
     printf("User id: %i disconnected, Remaining Users: %i\n", id, numUsers);
+}
+
+int setUserName(char * name)
+{
+    int i;
+    for(i=0;i<maxUsers;i++)
+    {
+        if(!strcmp(userNames[i], "\0"))
+        {
+            strcpy(userNames[i],name);
+            return i;
+        }
+    }
+
+    return -1; //means too many users (something majorly wrong) or username exists
+}
+
+int checkDupUserName(char * name)
+{
+    int i;
+    for(i=0; i<maxUsers;i++)
+    {
+        if(strcmp(userNames[i], name))
+        {
+            return 1;
+        }
+    }
+
+    return 0; //no mathc
 }
