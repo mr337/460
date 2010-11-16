@@ -38,3 +38,5 @@ struct ConnectAck * getACK();
 //status bits: 0 - no erros, connection working
 //             1 - too many conencted users, please try again
 //             2 - username in use, change and reconnect
+//             3 - something wrong with server - failed when getting user ID
+//             4 - username cannot be NULL

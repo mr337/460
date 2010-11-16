@@ -132,52 +132,64 @@ void* thread_proc(void *arg)
 
     sock = (int) arg;
 
-    //handle if there are too many users    
-    if(numUsers >= maxUsers)
-    {
-        recv(sock, buffer, sizeof(ConnectInit), 0);
-        ConnectInit * cI = &buffer;
-        char * name = cI->userName;
-        printf("WARNING you have too many users UserName:%s  Current Users: %i\n",name,numUsers);
-        ConnectACK ack;
-        ack.id = 0;
-        ack.status = 1;
-        send(sock, &ack, sizeof(ConnectACK), 0);
-
-        close(sock);
-        pthread_exit(0); 
-    }
-
-   
     //the ConnectINIT part
     recv(sock, buffer, sizeof(ConnectInit), 0);
     ConnectInit * cI = &buffer;
     char * name = cI->userName;
 
-    if(checkDupUserName(name))
+
+    //form ACK response
+    ConnectACK ack;
+    
+    //handle bad status    
+    if(numUsers >= maxUsers)
+    {
+        printf("WARNING you have too many users UserName:%s  Current Users: %i\n",name,numUsers);
+        ack.id = 0;
+        ack.status = 1;
+    }
+    else if(checkDupUserName(name))
     {
         printf("ERROR: duplicate username found\n");
+        ack.id = 0;
+        ack.status = 2;
     }
-    
-    sem_wait(&lusers); 
-    numUsers++;
-    totalUsers++;
-    id = setUserName(name);
-    if(id == -1)
+    else if(strlen(name) == 0 && name[0] != ' ')
     {
-        printf("Error getting an ID for user\n");
+        printf("ERROR: username is blank or length of zero\n");
+        ack.id=0;
+        ack.status=4;
     }
-    sem_post(&lusers);
+    else
+    {
+        sem_wait(&lusers); 
+        numUsers++;
+        totalUsers++;
+        id = setUserName(name);
+        if(id == -1)
+        {
+            printf("Error getting an ID for user\n");
+            ack.status = 3;
+        }
+        sem_post(&lusers);
 
-    printf("UserID : %i  Username:%s  Current Users: %i\n", id, name, numUsers);
-
-    ConnectACK ack;
-    ack.id = totalUsers;
-    ack.status = 0;
+        ack.id = id;
+        //ack.status already set to 0 unless failed to get unique user id
+    }
 
     send(sock, &ack, sizeof(ConnectACK), 0);
 
-    sleep(35);
+    if(ack.status != 0)
+    { //if error occured will free resources asap
+        close(sock);
+        pthread_exit(0); 
+    }
+    
+
+    printf("UserID : %i  Username:%s  Current Users: %i\n", id, name, numUsers);
+
+
+    sleep(3);
 
     //quiting code
     close(sock);
@@ -209,11 +221,11 @@ int checkDupUserName(char * name)
     int i;
     for(i=0; i<maxUsers;i++)
     {
-        if(strcmp(userNames[i], name))
+        if(!strcmp(userNames[i], name))
         {
             return 1;
         }
     }
 
-    return 0; //no mathc
+    return 0; //no match 
 }

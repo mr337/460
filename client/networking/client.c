@@ -3,16 +3,17 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <string.h>
+#include <time.h>
 #include "networking.c"
 
 void child_func(int childnum);
 
+int x;
 int main(int argc, char * argv[])
 {
     int nchildren;
     int pid;
-    int x;
-
+    
     if (argc > 1)
     {
         nchildren = atoi(argv[1]);
@@ -20,7 +21,7 @@ int main(int argc, char * argv[])
 
     for(x = 0; x < nchildren; x++)
     {
-        sleep(2);
+        sleep(1);
         if((pid = fork()) == 0)
         {
             child_func(x+1);
@@ -48,10 +49,18 @@ void child_func(int childnum)
     //code to init the server with details
     ConnectInit cI;
     char * name = &cI.userName;
-    strcpy(name,"Lee\0");    
+    char  tmpName[30];
+    sprintf(tmpName,"Lee%i",x); 
+    //sprintf(tmpName,"  "); 
+    strcpy(name,tmpName);    
     cI.majorVersion = 1;
     cI.minorVersion = 9;
     sendConnectInit(&cI);
+
+    if(x > 10)
+    {
+        x = 0;
+    }
 
     //wait for ConnectACK for id and such
     sleep(1);
