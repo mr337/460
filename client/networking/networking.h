@@ -2,6 +2,7 @@
 //
 
 #define UNAMELENGTH 30
+#define MESSAGELENGTH 255
 
 typedef struct
 {
@@ -22,7 +23,7 @@ typedef struct
     int id;
     int status; //used for lark, yelp, gauntlet - see project notes
     int messageLen; //message length for reading
-    char * message;
+    char message[MESSAGELENGHT];
 }Chat;
 
 int connectToServer(char *, int);
