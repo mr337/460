@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include <semaphore.h>
 #include "../client/networking/networking.h"
+#include "linkedlist.h"
 
 //prototypes
 void* thread_proc(void *arg);
