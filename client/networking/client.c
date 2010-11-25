@@ -50,7 +50,7 @@ void child_func(int childnum)
     ConnectInit cI;
     char * name = &cI.userName;
     char  tmpName[30];
-    sprintf(tmpName,"Lee%i",x); 
+    sprintf(tmpName,"User%i",x); 
     //sprintf(tmpName,"  "); 
     strcpy(name,tmpName);    
     cI.majorVersion = 1;

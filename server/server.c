@@ -6,6 +6,8 @@
 #include <netinet/in.h>
 #include <pthread.h>
 #include <string.h>
+#include <arpa/inet.h>
+#include <unistd.h>
 #include <semaphore.h>
 #include "../client/networking/networking.h"
 
@@ -24,7 +26,7 @@ sem_t lusers;
 int main(int argc, char *argv[])
 {
 
-    char master_array[maxUsers];
+    //char master_array[maxUsers];
 
     if(argc != 3)
     {
@@ -82,17 +84,13 @@ int main(int argc, char *argv[])
     sAddr.sin_port = htons(port);
     sAddr.sin_addr.s_addr = INADDR_ANY;
 
-    result = bind(listensock, (struct sockaddr*) &sAddr, sizeof(sAddr));
-
-    if(result < 0)
+    if(bind(listensock, (struct sockaddr*) &sAddr, sizeof(sAddr)) < 0)
     {
         perror("server");
         return 0;
     }
 
-    result = listen(listensock, 10);
-
-    if(result < 0)
+    if(listen(listensock, 10) < 0)
     {
         perror("server");
         return 0;
@@ -104,8 +102,7 @@ int main(int argc, char *argv[])
 
         newsock = accept(listensock, NULL, NULL);
 
-        result = pthread_create(&thread_id, NULL, thread_proc, (void*) newsock);
-        if(result != 0)
+        if(pthread_create(&thread_id, NULL, thread_proc, (void*) newsock) != 0)
         {
             perror("server");
         }
@@ -199,6 +196,7 @@ void* thread_proc(void *arg)
     sem_post(&lusers);
 
     printf("User id: %i disconnected, Remaining Users: %i\n", id, numUsers);
+    pthread_exit(0);
 }
 
 int setUserName(char * name)

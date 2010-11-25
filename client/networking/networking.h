@@ -23,7 +23,7 @@ typedef struct
     int id;
     int status; //used for lark, yelp, gauntlet - see project notes
     int messageLen; //message length for reading
-    char message[MESSAGELENGHT];
+    char message[MESSAGELENGTH];
 }Chat;
 
 int connectToServer(char *, int);
