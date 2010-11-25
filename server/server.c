@@ -15,13 +15,20 @@
 void* thread_proc(void *arg);
 int setUserName(char * name);
 int checkDupUserName(char * name);
+void addMessage(char * msg);
+int checkRecipients();
 
 int maxUsers;
 int numUsers;
 int totalUsers;
+int messageCount;
 char **userNames;
+char **message;
 int * userStatus;
+int * messageStatus; //0-have not recieved message, 1-recieved message
+
 sem_t lusers;
+sem_t lmessage; 
 
 int main(int argc, char *argv[])
 {
@@ -50,7 +57,17 @@ int main(int argc, char *argv[])
     totalUsers = 0;
     userStatus = malloc(maxUsers * sizeof(int));
 
-    //init of arruoay of strings
+    sem_init(&lmessage,0,1);
+    messageCount = 0;
+    message = malloc(MAXMESSAGEQUEUE * sizeof(char *));
+    for(i=0; i<MAXMESSAGEQUEUE; i++)
+    {
+        message[i] = malloc(MESSAGELENGTH * sizeof(char *));
+        strcyp(message[i], "\0");
+    }
+
+
+    //init of array of strings
     userNames = malloc(maxUsers * sizeof(char *));
     int i = 0;
     for(i=0; i< maxUsers; i++)
@@ -138,7 +155,7 @@ void* thread_proc(void *arg)
     //form ACK response
     ConnectACK ack;
     
-    //handle bad status    
+    //handle new user bad status    
     if(numUsers >= maxUsers)
     {
         printf("WARNING you have too many users UserName:%s  Current Users: %i\n",name,numUsers);
@@ -185,6 +202,7 @@ void* thread_proc(void *arg)
 
     printf("UserID : %i  Username:%s  Current Users: %i\n", id, name, numUsers);
 
+    
 
     sleep(3);
 
@@ -226,4 +244,49 @@ int checkDupUserName(char * name)
     }
 
     return 0; //no match 
+}
+
+void addMessage(char * msg)
+{
+    message[MESSAGECOUNT] = msg;
+    messageCount++;
+}
+
+int checkRecipients()
+{//return 0 there is still a client waiting to recieve msg
+
+    for(int i=0; i<numUsers; i++)
+    {
+        if(messageStatus[i] == 0)
+        {
+            return 0;
+        }
+    }
+
+    //exexution made it to here means all clients recieved
+    //the message - need to reset messageStatus array
+    //for next message
+    for(int i=0; i<numUsers; i++)
+    {
+        messageStatus[i] = 0;
+    }
+
+    return 1;
+}
+
+void getMessage(int id)
+{
+    if(checkRecipients())
+    {
+       //increment message by 1 
+    }
+
+    if(messageStatus[i] !=0)
+    {
+        return "\0";
+    }
+    else
+    {
+        return message;
+    }
 }

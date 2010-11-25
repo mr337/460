@@ -1,8 +1,8 @@
 //header file needed for networking.c
 //
 
-#define UNAMELENGTH 30
-#define MESSAGELENGTH 255
+#define UNAMELENGTH 30 //max username length
+#define MESSAGELENGTH 255 //max message lengh in chars
 
 typedef struct
 {
