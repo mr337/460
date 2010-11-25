@@ -4,7 +4,7 @@
 #include <netinet/in.h>
 #include <string.h>
 #include <time.h>
-#include "networking.c"
+#include "networking.h"
 
 void child_func(int childnum);
 

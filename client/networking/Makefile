@@ -1,2 +1,11 @@
-all:
-	gcc -Wall -g -o client client.c
+CC = gcc
+CFLAGS = -Wall -g
+
+BIN = client
+OBJS = client.c networking.c
+
+all: $(OBJS)
+	$(CC) $(CFLAGS) -o $(BIN) $(OBJS)
+
+clean:
+	rm $(BIN) 

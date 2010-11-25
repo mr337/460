@@ -1,8 +1,10 @@
 //header file needed for networking.c
-//
 
-#define UNAMELENGTH 30
-#define MESSAGELENGTH 255
+#ifndef networking
+#define networking
+
+#define UNAMELENGTH 30 //max username length
+#define MESSAGELENGTH 255 //max message lengh in chars
 
 typedef struct
 {
@@ -41,3 +43,5 @@ struct ConnectAck * getACK();
 //             2 - username in use, change and reconnect
 //             3 - something wrong with server - failed when getting user ID
 //             4 - username cannot be NULL
+
+#endif
