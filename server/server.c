@@ -3,6 +3,7 @@
 #include <sys/ioctl.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/time.h>
 #include <netinet/in.h>
 #include <pthread.h>
 #include <string.h>
@@ -25,7 +26,7 @@ int totalUsers;
 int messageCount;
 char **userNames;
 int * userStatus;
-int * messageStatus; //0-have not recieved message, 1-recieved message
+int * messageStatus; //0-have not recieved message, 1-recieved message, -1 dropped user
 char * getMessage(int id);
 
 sem_t lusers;
@@ -68,6 +69,11 @@ int main(int argc, char *argv[])
         userNames[i] = malloc(UNAMELENGTH * sizeof(char));
         strcpy(userNames[i],"\0");
     }
+
+    messageStatus = malloc(maxUsers * sizeof(int));
+
+    //message linked list
+    linkedListInit();
 
     //print stats
     printf("Starting server\nPort: %i\nMax Users of: %i\nMax UserName Length: %i\n", port, maxUsers, UNAMELENGTH);
@@ -135,36 +141,36 @@ void* thread_proc(void *arg)
 {
     int sock;
     int id=0;
-    char buffer[sizeof(ConnectInit)];
+    char cIBuffer[sizeof(ConnectInit)];
+    char chatBuffer[sizeof(Chat)];
 
     sock = (int) arg;
 
     //the ConnectINIT part
-    recv(sock, buffer, sizeof(ConnectInit), 0);
-    ConnectInit * cI = &buffer;
+    recv(sock, cIBuffer, sizeof(ConnectInit), 0);
+    ConnectInit * cI = &cIBuffer;
     char * name = cI->userName;
 
 
     //form ACK response
     ConnectACK ack;
+    ack.id = 0;
+    ack.status = 0;
     
     //handle new user bad status    
     if(numUsers >= maxUsers)
     {
         printf("WARNING you have too many users UserName:%s  Current Users: %i\n",name,numUsers);
-        ack.id = 0;
         ack.status = 1;
     }
     else if(checkDupUserName(name))
     {
         printf("ERROR: duplicate username found\n");
-        ack.id = 0;
         ack.status = 2;
     }
     else if(strlen(name) == 0 && name[0] != ' ')
     {
         printf("ERROR: username is blank or length of zero\n");
-        ack.id=0;
         ack.status=4;
     }
     else
@@ -195,15 +201,64 @@ void* thread_proc(void *arg)
 
     printf("UserID : %i  Username:%s  Current Users: %i\n", id, name, numUsers);
 
-    
+    //user sussesfully connected and accepted by server, chat relat code
+    fd_set fds;
+    FD_ZERO(&fds);
+    FD_SET(sock,&fds);
+    struct timeval t;
+    t.tv_sec = 0;
+    t.tv_usec = 300; 
 
-    sleep(3);
+    messageStatus[id] = 1; //ready to relay messages
+    int quit = 0;
+
+    for(;;)
+    {
+        //fd_set and timeval should be considered undefined aftwer select
+        fd_set tmpfds = fds;
+        struct timeval ttmp = t;
+
+        switch(select(sock+1,&tmpfds,NULL,NULL,&ttmp))
+        {
+            case -1:
+                printf("Something broke, client id:%s\n",name);
+            default:
+                if(FD_ISSET(sock,&tmpfds))
+                {
+                    recv(sock, chatBuffer, sizeof(Chat), 0);
+                    Chat * c = &chatBuffer;
+                    char * message;
+                    strcpy(message, name);
+                    strcat(message,": ");
+                    strncat(message, c->message);
+
+                    sem_wait(&lmessage);
+                    addMessage(message);
+                    sem_post(&lmessage);
+                }
+
+                sem_wait(&lmesssage);
+                char * chatMsg = getMessage(id); 
+                sem_post(&lmessage);
+                if(strcmp(chatMsg,"\0")!=0)
+                {
+                    Chat * c = &chatBuffer;
+                    c->id = 0;
+                    c->status = 0;
+                    c->messageLen = sizeof(chatMsg);
+                    c->message = chatMsg;
+                    send(sock, &chatBuffer, sizeof(c), 0);
+                }
+        }
+    }
+
 
     //quiting code
     close(sock);
     sem_wait(&lusers);
     numUsers--;
     strcpy(userNames[id], "\0");
+    messageStatus[id] = -1;
     sem_post(&lusers);
 
     printf("User id: %i disconnected, Remaining Users: %i\n", id, numUsers);
@@ -242,6 +297,7 @@ int checkDupUserName(char * name)
 void addMessage(char * msg)
 {
     //add to linked list
+    addNode(msg);
 }
 
 int checkRecipients()
@@ -260,7 +316,10 @@ int checkRecipients()
     //for next message
     for(i=0; i<numUsers; i++)
     {
-        messageStatus[i] = 0;
+        if(messageStatus[i] == 1)
+        {//ignore -1 (dropped users)
+            messageStatus[i] = 0;
+        }
     }
 
     return 1;
@@ -270,15 +329,17 @@ char * getMessage(int id)
 {
     if(checkRecipients())
     {
-       //increment message by 1 
+       //all users have recieved message, moving to next message 
+       nextNode();
     }
 
     if(messageStatus[id] !=0)
-    {
-        return "\0";
+    {//return null because wouldn't want to repeat message
+        return NULL; 
     }
     else
     {
-      //  return message;
+      //return message;
+        return getNode();
     }
 }
