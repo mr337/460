@@ -55,6 +55,7 @@ int main(int argc, char *argv[])
 
     //init 
     sem_init(&lusers,0,1);
+    sem_init(&lmessage,0,1);
     numUsers = 0;
     totalUsers = 0;
     userStatus = malloc(maxUsers * sizeof(int));
@@ -227,17 +228,23 @@ void* thread_proc(void *arg)
                 {
                     recv(sock, chatBuffer, sizeof(Chat), 0);
                     Chat * c = &chatBuffer;
+
+                    if(c->status == 1)
+                    {
+                        quit = 1;
+                        break;
+                    }
                     char * message;
                     strcpy(message, name);
                     strcat(message,": ");
-                    strncat(message, c->message);
+                    strncat(message, c->message, UNAMELENGTH+MESSAGELENGTH);
 
                     sem_wait(&lmessage);
                     addMessage(message);
                     sem_post(&lmessage);
                 }
 
-                sem_wait(&lmesssage);
+                sem_wait(&lmessage);
                 char * chatMsg = getMessage(id); 
                 sem_post(&lmessage);
                 if(strcmp(chatMsg,"\0")!=0)
@@ -249,6 +256,11 @@ void* thread_proc(void *arg)
                     c->message = chatMsg;
                     send(sock, &chatBuffer, sizeof(c), 0);
                 }
+        }
+
+        if(quit == 1)
+        {
+            break;
         }
     }
 

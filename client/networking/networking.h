@@ -25,7 +25,7 @@ typedef struct
     int id; //if not set to 0 then means it's a keyboard update (10 people)
     int status; //used for lark, yelp, gauntlet - see project notes
     int messageLen; //message length for reading
-    char message[MESSAGELENGTH + UNAMELENGTH]; //message is as long as messagelength, but when resending server
+    char * message; //message is as long as messagelength, but when resending server
                                                //will attach username 
 }Chat;
 
@@ -47,5 +47,7 @@ struct ConnectAck * getACK();
 
 
 //Chat notes
+//status bits: 0 - nothing unusual
+//status bits: 1 - disconnecting...
 
 #endif
