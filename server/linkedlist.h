@@ -5,11 +5,10 @@ struct node
     struct node *next;
 };
 
-struct node head;
-struct node end;
+struct node * head;
 
-void init();
+void linkedListInit();
 void addNode(char * msg);
 char * getNode();
-void nextNode();
-    
+int nextNode();
+int isNull();

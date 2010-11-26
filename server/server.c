@@ -24,9 +24,9 @@ int numUsers;
 int totalUsers;
 int messageCount;
 char **userNames;
-char **message;
 int * userStatus;
 int * messageStatus; //0-have not recieved message, 1-recieved message
+char * getMessage(int id);
 
 sem_t lusers;
 sem_t lmessage; 
@@ -59,14 +59,6 @@ int main(int argc, char *argv[])
     userStatus = malloc(maxUsers * sizeof(int));
 
     sem_init(&lmessage,0,1);
-    messageCount = 0;
-    message = malloc(MAXMESSAGEQUEUE * sizeof(char *));
-    for(i=0; i<MAXMESSAGEQUEUE; i++)
-    {
-        message[i] = malloc(MESSAGELENGTH * sizeof(char *));
-        strcyp(message[i], "\0");
-    }
-
 
     //init of array of strings
     userNames = malloc(maxUsers * sizeof(char *));
@@ -249,14 +241,13 @@ int checkDupUserName(char * name)
 
 void addMessage(char * msg)
 {
-    message[MESSAGECOUNT] = msg;
-    messageCount++;
+    //add to linked list
 }
 
 int checkRecipients()
 {//return 0 there is still a client waiting to recieve msg
-
-    for(int i=0; i<numUsers; i++)
+    int i;
+    for(i=0; i<numUsers; i++)
     {
         if(messageStatus[i] == 0)
         {
@@ -267,7 +258,7 @@ int checkRecipients()
     //exexution made it to here means all clients recieved
     //the message - need to reset messageStatus array
     //for next message
-    for(int i=0; i<numUsers; i++)
+    for(i=0; i<numUsers; i++)
     {
         messageStatus[i] = 0;
     }
@@ -275,19 +266,19 @@ int checkRecipients()
     return 1;
 }
 
-void getMessage(int id)
+char * getMessage(int id)
 {
     if(checkRecipients())
     {
        //increment message by 1 
     }
 
-    if(messageStatus[i] !=0)
+    if(messageStatus[id] !=0)
     {
         return "\0";
     }
     else
     {
-        return message;
+      //  return message;
     }
 }
