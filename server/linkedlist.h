@@ -1,4 +1,6 @@
 
+#ifndef linkedlist
+#define linkedlist
 struct node
 {
     char * message;
@@ -12,3 +14,5 @@ void addNode(char * msg);
 char * getNode();
 int nextNode();
 int isNull();
+
+#endif
