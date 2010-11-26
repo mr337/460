@@ -1,6 +1,7 @@
+#include <ncurses.h>
+
 typedef struct
 {
     WINDOW *window;
-    int width, height;
-    int bgcolor, fgcolor;
+    int w, h, x, y;
 } CHAT_WINDOW;
