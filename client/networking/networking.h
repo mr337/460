@@ -22,7 +22,7 @@ typedef struct
 
 typedef struct
 {
-    int id;
+    int id; //if not set to 0 then means it's a keyboard update (10 people)
     int status; //used for lark, yelp, gauntlet - see project notes
     int messageLen; //message length for reading
     char message[MESSAGELENGTH];
