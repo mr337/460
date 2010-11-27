@@ -2,13 +2,14 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 #include <string.h>
+#include <unistd.h>
 #include "networking.h"
 
 //connStatus, 1 = connected, 0 = disconnected
 int connStatus;
 int sock;
-
 
 int connectToServer(char * ipAddress, int port)
 {
@@ -34,7 +35,7 @@ int connectToServer(char * ipAddress, int port)
         connStatus = 1;
     }
 
-
+    return connStatus;
 }
 
 int isConnected()
@@ -53,12 +54,19 @@ int sendConnectInit(ConnectInit * cI)
     return send(sock, cI, sizeof(ConnectInit), 0);
 }
 
-struct ConnectAck *getACK()
+int getACK(ConnectACK * cACK)
 {
-    char buffer[sizeof(ConnectACK)];
-    recv(sock, buffer, sizeof(ConnectACK),0);
-    ConnectACK * ack = &buffer;
-    return ack;
+    return recv(sock, cACK, sizeof(ConnectACK),0);
+}
+
+int sendChat(Chat * ch)
+{
+    return send(sock, ch, sizeof(ch),0);
+}
+
+int receiveChat(Chat * ch)
+{
+    return recv(sock, ch, sizeof(Chat),0);
 }
 
 int sendMessage(char * message)

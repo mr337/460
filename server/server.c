@@ -234,7 +234,7 @@ void* thread_proc(void *arg)
                         quit = 1;
                         break;
                     }
-                    char * message;
+                    char * message = "\0";
                     strcpy(message, name);
                     strcat(message,": ");
                     strncat(message, c->message, UNAMELENGTH+MESSAGELENGTH);
@@ -253,7 +253,8 @@ void* thread_proc(void *arg)
                     c->id = 0;
                     c->status = 0;
                     c->messageLen = sizeof(chatMsg);
-                    c->message = chatMsg;
+                    //c->message = chatMsg;
+                    strcpy(c->message,chatMsg);
                     send(sock, &chatBuffer, sizeof(c), 0);
                 }
         }
