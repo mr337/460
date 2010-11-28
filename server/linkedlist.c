@@ -1,5 +1,8 @@
 #include "linkedlist.h"
 #include <stdlib.h>
+#include <string.h>
+
+#include <stdio.h>
 
 int length = 0;
 
@@ -11,8 +14,8 @@ void linkedListInit()
 void addNode(char * msg)
 {
     struct node * n;
-    n = (struct node *) malloc(sizeof(n));
-    n->message = msg;
+    n = (struct node *) malloc(sizeof(struct node));
+    strcpy(n->message,msg);
 
     if(head == NULL)
     {
@@ -21,10 +24,11 @@ void addNode(char * msg)
     else
     {
         struct node * tmp;
-        tmp = (struct node *) malloc(sizeof(tmp));
+        tmp = (struct node *) malloc(sizeof(struct node));
         tmp = head;
         while(tmp->next != NULL)
         {
+            //printf("LL %s\n",tmp->message);
             tmp = tmp->next;
         }
 
@@ -43,6 +47,8 @@ int nextNode()
 {
     if(length > 1)
     {
+        //TODO need to free up the memory from the old node
+        //struct node * old = head;
         head = head->next;
         length--;
         return 0;
@@ -60,4 +66,9 @@ int nextNode()
 int isNull()
 {
     return length == 0;
+}
+
+int getLength()
+{
+    return length;
 }

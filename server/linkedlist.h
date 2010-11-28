@@ -1,9 +1,10 @@
+#include "../client/networking/networking.h"
 
 #ifndef linkedlist
 #define linkedlist
 struct node
 {
-    char * message;
+    char message[UNAMELENGTH+MESSAGELENGTH];
     struct node *next;
 };
 
@@ -14,5 +15,6 @@ void addNode(char * msg);
 char * getNode();
 int nextNode();
 int isNull();
+int getLength();
 
 #endif

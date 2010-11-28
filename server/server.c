@@ -320,33 +320,33 @@ void* thread_proc(void *arg)
                     free(sChat);
                 }
 
-                //char * chatMsg = malloc(UNAMELENGTH+MESSAGELENGTH); 
-                //sem_wait(&lmessage);
-                //
-                //if(!getMessage(id,chatMsg))
-                //{//nothing to send
-                //    sem_post(&lmessage);
-                //    free(chatMsg);
-                //    continue;
-                //}
+                char * chatMsg = malloc(UNAMELENGTH+MESSAGELENGTH); 
+                sem_wait(&lmessage);
+                
+                if(!getMessage(id,chatMsg))
+                {//nothing to send
+                    sem_post(&lmessage);
+                    free(chatMsg);
+                    continue;
+                }
 
-
-                ////sem_post(&lmessage);
-                ////    //char * delim = strtok(sChat,"`");
-                ////    //ch->id = atoi(delim);
-                ////    //delim = strtok(NULL,"`");
-                ////    //ch->status = atoi(delim);
-                ////    //delim = strtok(NULL,"`");
-                ////    //ch->messageLen = atoi(delim);
-                ////    //delim = strtok(NULL,"`");
-                ////    //strcpy(ch->message,delim);
-                //
-                //printf("BROADCAST:%s\n",chatMsg);   
-                //    
 
                 //sem_post(&lmessage);
+                //    //char * delim = strtok(sChat,"`");
+                //    //ch->id = atoi(delim);
+                //    //delim = strtok(NULL,"`");
+                //    //ch->status = atoi(delim);
+                //    //delim = strtok(NULL,"`");
+                //    //ch->messageLen = atoi(delim);
+                //    //delim = strtok(NULL,"`");
+                //    //strcpy(ch->message,delim);
+                
+                printf("BROADCAST USER %s:%s\n",name,chatMsg);   
+                    
 
-                //free(chatMsg);
+                sem_post(&lmessage);
+
+                free(chatMsg);
                 //printf("Never get here 2\n");
         }
 
@@ -412,6 +412,7 @@ int checkRecipients()
     {
         if(messageStatus[i] == 0)
         {
+            printf("Not all recip have got the message\n");
             return 0;
         }
     }
@@ -427,30 +428,30 @@ int checkRecipients()
         }
     }
 
+    printf("All recip have got the message\n");
+
     return 1;
 }
 
 int getMessage(int id, char * msg)
 {
-    return 0;
+    //return 0;
 
     if(messageStatus[id] !=0)
     {//return 0 becuase nothing to do
+        if(getLength() > 1 && checkRecipients())
+        {
+            printf("Moving next node\n");
+            nextNode();
+        }
         return 0; 
     }
     else
     {//return 1 and copy message
         printf("Did not get message, retrieveing!\n");
-        if(checkRecipients())
-        {
-            //all users have recieved message, moving to next message 
-            printf("Moving to next node\n");
-            nextNode();
-        }
 
         messageStatus[id] = 1;
-        printf("HAHAH\n");
-        printf("GetNode():%s\n",getNode());
+        //printf("GetNode():%s\n",getNode());
         strcpy(msg,getNode());
         return 1;
     }
