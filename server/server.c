@@ -262,12 +262,13 @@ void* thread_proc(void *arg)
                         printf("Error reading chat serialization, use id:%i\n",id);
                         errors++;
 
+
                         if(errors > MAXTRANSMISSIONERRORS)
                         {
+                        free(ch);
+                        free(sChat);
                             printf("User %s, %i has reaced error threshold: %i, disconnecting...\n",name,id,MAXTRANSMISSIONERRORS);
                             quit = 1;
-                            free(ch);
-                            free(sChat);
                             break;
                         }
                         continue;
@@ -285,12 +286,6 @@ void* thread_proc(void *arg)
                     delim = strtok(NULL,"`");
 
                     free(token);
-                    
-                    //printf("ID:%i\n",ch->id);
-                    //printf("STATUS:%i\n",ch->status);
-                    //printf("MessageLEN:%i\n",ch->messageLen);
-                    //printf("Message:%s\n",ch->message);
-
 
                     //if chat status is 1, the user is quiting
                     if(ch->status == 1)
@@ -306,13 +301,6 @@ void* thread_proc(void *arg)
                         free(sChat);
                         continue;
                     }
-                    else
-                    {
-                        //strcpy(ch->message,delim);
-                    }
-
-
-                    //printf("%s\n",message);
 
                     sem_wait(&lmessage);
                     addMessage(sChat);
@@ -342,7 +330,6 @@ void* thread_proc(void *arg)
                 printf("BROADCAST USER %s:%s\n",name,chatMsg);   
 
                 free(chatMsg);
-                //printf("Never get here 2\n");
         }
 
         if(quit == 1)

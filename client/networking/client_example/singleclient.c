@@ -14,18 +14,26 @@ void quit();
 
 int main(int argc, char * argv[])
 {
+
+    if(argc != 4)
+    {
+        printf("Must be in format program Username Server Port\n");
+        exit(EXIT_SUCCESS);
+    }
     initscr();
     noecho();
     cbreak();
     refresh();
 
     //connecto to server
-    connectToServer("127.0.0.1",5000);
+    connectToServer(argv[2],atoi(argv[3]));
 
     if(isConnected()!= 1)
     {
        printw("Error connecting to client\n");
        refresh();
+       getch();
+       endwin();
        quit();
     }
 
