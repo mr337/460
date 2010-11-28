@@ -5,6 +5,7 @@
 
 #define UNAMELENGTH 30 //max username length
 #define MESSAGELENGTH 255 //max message lengh in chars
+#define MAXTRANSMISSIONERRORS 10
 
 typedef struct
 {

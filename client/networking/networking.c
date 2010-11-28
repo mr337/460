@@ -68,6 +68,7 @@ int sendChat(Chat * ch)
     if(!size)
     {
         printw("Error serializing struct\n");
+        free(sChat);
         return 0;
     }
     else
@@ -75,7 +76,11 @@ int sendChat(Chat * ch)
         int recvSize = 0;
         send(sock,&size,sizeof(int),0);
         recv(sock, &recvSize, sizeof(int),0);
-        return send(sock,sChat, size,0);
+        recvSize = send(sock,sChat, size,0);
+        //printw("Sending:%s\n",sChat);
+        free(sChat);
+        return recvSize;
+
     }
 }
 

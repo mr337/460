@@ -220,10 +220,11 @@ void* thread_proc(void *arg)
     FD_SET(sock,&fds);
     struct timeval t;
     t.tv_sec = 0;
-    t.tv_usec = 300000; 
+    t.tv_usec = 500000; //sleep half a second 
 
     messageStatus[id] = 0; //ready to relay messages
     int quit = 0;
+    int errors = 0;
 
     //adding broadcast message
     char * joinBroadcast = (char*)malloc(80); 
@@ -259,18 +260,29 @@ void* thread_proc(void *arg)
                     if(!recv(sock, sChat, recvSize,0))
                     {
                         printf("Error reading chat serialization, use id:%i\n",id);
+                        errors++;
+
+                        if(errors > MAXTRANSMISSIONERRORS)
+                        {
+                            printf("User %s, %i has reaced error threshold: %i, disconnecting...\n",name,id,MAXTRANSMISSIONERRORS);
+                            quit = 1;
+                            free(ch);
+                            free(sChat);
+                            break;
+                        }
+                        continue;
                     }
+
 
                     strcpy(token,sChat);
 
                     char * delim = strtok(token,"`");
-                    ch->id = atoi(delim);
+                    //ch->id = atoi(delim);
                     delim = strtok(NULL,"`");
                     ch->status = atoi(delim);
                     delim = strtok(NULL,"`");
-                    ch->messageLen = atoi(delim);
+                    ch->messageLen = atoi(delim); //all I need is the message lengts, may optimize later
                     delim = strtok(NULL,"`");
-                    strcpy(ch->message,delim);
                     
                     //printf("ID:%i\n",ch->id);
                     //printf("STATUS:%i\n",ch->status);
@@ -286,6 +298,16 @@ void* thread_proc(void *arg)
                         free(sChat);
                         break;
                     }
+                    if(ch->messageLen == 0)
+                    {//protect from blank messages
+                        free(ch);
+                        free(sChat);
+                        continue;
+                    }
+                    else
+                    {
+                        //strcpy(ch->message,delim);
+                    }
 
 
                     //printf("%s\n",message);
@@ -298,33 +320,33 @@ void* thread_proc(void *arg)
                     free(sChat);
                 }
 
-                char * chatMsg = malloc(UNAMELENGTH+MESSAGELENGTH); 
-                sem_wait(&lmessage);
-                
-                if(!getMessage(id,chatMsg))
-                {//nothing to send
-                    sem_post(&lmessage);
-                    free(chatMsg);
-                    continue;
-                }
+                //char * chatMsg = malloc(UNAMELENGTH+MESSAGELENGTH); 
+                //sem_wait(&lmessage);
+                //
+                //if(!getMessage(id,chatMsg))
+                //{//nothing to send
+                //    sem_post(&lmessage);
+                //    free(chatMsg);
+                //    continue;
+                //}
 
+
+                ////sem_post(&lmessage);
+                ////    //char * delim = strtok(sChat,"`");
+                ////    //ch->id = atoi(delim);
+                ////    //delim = strtok(NULL,"`");
+                ////    //ch->status = atoi(delim);
+                ////    //delim = strtok(NULL,"`");
+                ////    //ch->messageLen = atoi(delim);
+                ////    //delim = strtok(NULL,"`");
+                ////    //strcpy(ch->message,delim);
+                //
+                //printf("BROADCAST:%s\n",chatMsg);   
+                //    
 
                 //sem_post(&lmessage);
-                //    //char * delim = strtok(sChat,"`");
-                //    //ch->id = atoi(delim);
-                //    //delim = strtok(NULL,"`");
-                //    //ch->status = atoi(delim);
-                //    //delim = strtok(NULL,"`");
-                //    //ch->messageLen = atoi(delim);
-                //    //delim = strtok(NULL,"`");
-                //    //strcpy(ch->message,delim);
-                
-                printf("BROADCAST:%s\n",chatMsg);   
-                    
 
-                sem_post(&lmessage);
-
-                free(chatMsg);
+                //free(chatMsg);
                 //printf("Never get here 2\n");
         }
 
@@ -410,6 +432,8 @@ int checkRecipients()
 
 int getMessage(int id, char * msg)
 {
+    return 0;
+
     if(messageStatus[id] !=0)
     {//return 0 becuase nothing to do
         return 0; 
