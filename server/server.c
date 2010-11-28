@@ -157,6 +157,8 @@ void* thread_proc(void *arg)
     ConnectACK ack;
     ack.id = 0;
     ack.status = 0;
+
+    printf("User with name:%s attempted to join\n", name);
     
     //handle new user bad status    
     if(numUsers >= maxUsers)
@@ -202,16 +204,19 @@ void* thread_proc(void *arg)
 
     printf("UserID : %i  Username:%s  Current Users: %i\n", id, name, numUsers);
 
-    //user sussesfully connected and accepted by server, chat relat code
+    //user sussesfully connected and accepted by server, chat relay code
     fd_set fds;
     FD_ZERO(&fds);
     FD_SET(sock,&fds);
     struct timeval t;
     t.tv_sec = 0;
-    t.tv_usec = 300; 
+    t.tv_usec = 300000; 
 
     messageStatus[id] = 1; //ready to relay messages
     int quit = 0;
+    int tmptrack = 0;
+
+    printf("Getting ready for chat loop for user id:%i\n", id);
 
     for(;;)
     {
@@ -226,37 +231,54 @@ void* thread_proc(void *arg)
             default:
                 if(FD_ISSET(sock,&tmpfds))
                 {
-                    recv(sock, chatBuffer, sizeof(Chat), 0);
-                    Chat * c = &chatBuffer;
+                    //Chat * ch = (Chat *)malloc(sizeof(Chat));
+                    //recv(sock, (char*)ch, sizeof(Chat), 0);
+                    recv(sock, (void *)chatBuffer, sizeof(Chat), 0);
+                    Chat * ch = &chatBuffer;
 
-                    if(c->status == 1)
+                    //printf("got someting ahahahahahahahah");
+                    
+                    printf("Got:%c\n",*ch->message);
+                    //printf("Recieved id:%i, status:%i, msg len:%i, message:%s",ch->id,ch->status,ch->messageLen,*ch->message);
+
+                    if(ch->status == 1)
                     {
                         quit = 1;
                         break;
                     }
-                    char * message = "\0";
-                    strcpy(message, name);
-                    strcat(message,": ");
-                    strncat(message, c->message, UNAMELENGTH+MESSAGELENGTH);
 
-                    sem_wait(&lmessage);
-                    addMessage(message);
-                    sem_post(&lmessage);
+                    //printf("%s\n",*ch->message);
+                    //printf("Fired:%i\n",tmptrack);
+                    //tmptrack++;
+
+                    //char * message = malloc(UNAMELENGTH+MESSAGELENGTH*sizeof(char)); 
+                    //strcpy(message, name);
+                    //strcat(message,": ");
+                    //strncat(message, *ch->message, UNAMELENGTH+MESSAGELENGTH);
+
+                    //printf("%s\n",message);
+
+                    //sem_wait(&lmessage);
+                    //addMessage(message);
+                    //sem_post(&lmessage);
+                    //
+                    //free(ch);
+                    //free(message);
                 }
 
-                sem_wait(&lmessage);
-                char * chatMsg = getMessage(id); 
-                sem_post(&lmessage);
-                if(strcmp(chatMsg,"\0")!=0)
-                {
-                    Chat * c = &chatBuffer;
-                    c->id = 0;
-                    c->status = 0;
-                    c->messageLen = sizeof(chatMsg);
-                    //c->message = chatMsg;
-                    strcpy(c->message,chatMsg);
-                    send(sock, &chatBuffer, sizeof(c), 0);
-                }
+                //sem_wait(&lmessage);
+                //char * chatMsg = getMessage(id); 
+                //sem_post(&lmessage);
+                //if(strcmp(chatMsg,"\0")!=0)
+                //{
+                //    Chat * c = &chatBuffer;
+                //    c->id = 0;
+                //    c->status = 0;
+                //    c->messageLen = sizeof(chatMsg);
+                //    //c->message = chatMsg;
+                //    strcpy(c->message,chatMsg);
+                //    send(sock, &chatBuffer, sizeof(c), 0);
+                //}
         }
 
         if(quit == 1)
@@ -310,6 +332,7 @@ int checkDupUserName(char * name)
 void addMessage(char * msg)
 {
     //add to linked list
+    printf("%s\n",msg);
     addNode(msg);
 }
 

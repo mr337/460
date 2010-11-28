@@ -5,6 +5,7 @@
 #include <arpa/inet.h>
 #include <string.h>
 #include <unistd.h>
+#include <curses.h>
 #include "networking.h"
 
 //connStatus, 1 = connected, 0 = disconnected
@@ -61,22 +62,12 @@ int getACK(ConnectACK * cACK)
 
 int sendChat(Chat * ch)
 {
-    return send(sock, ch, sizeof(ch),0);
+    char * lala = &ch->message;
+    printf("Sending:%s\n", lala);
+    return send(sock,ch, sizeof(ch),0);
 }
 
 int receiveChat(Chat * ch)
 {
-    return recv(sock, ch, sizeof(Chat),0);
+    return recv(sock, ch, sizeof(Chat),MSG_DONTWAIT);
 }
-
-int sendMessage(char * message)
-{//this is only for testing
-    return send(sock, message, strlen(message),0);
-}
-
-void receiveMessage(char * buffer)
-{//this is only for testing
-    recv(sock, buffer, 25,0);
-}
-
-

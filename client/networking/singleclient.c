@@ -10,27 +10,32 @@
 #include <curses.h>
 #include "networking.h"
 
+void quit();
 
 int main(int argc, char * argv[])
 {
-    //connecto to server
-    connectToServer("127.0.0.1",5000);
-
-    if(isConnected()!= 1)
-    {
-        perror("Error connecting to client\n");
-    }
-
     initscr();
     noecho();
     cbreak();
     refresh();
 
+    //connecto to server
+    connectToServer("127.0.0.1",5000);
+
+    if(isConnected()!= 1)
+    {
+       printw("Error connecting to client\n");
+       refresh();
+       quit();
+    }
+
+
+    printw("Connecting with username: %s\n", argv[1]);
 
     //code to init the server with details
-    ConnectInit * cI; 
-    cI = (ConnectInit *) malloc(sizeof(ConnectInit));
-    sprintf(*cI->userName,"%s",argv[1]); 
+    ConnectInit * cI = (ConnectInit *) malloc(sizeof(ConnectInit));
+    char * name = &cI->userName;
+    strcpy(name, argv[1]);
     cI->majorVersion = 1;
     cI->minorVersion = 9;
     sendConnectInit(cI);
@@ -42,6 +47,7 @@ int main(int argc, char * argv[])
     ConnectACK * ack = (ConnectACK*)malloc(sizeof(ConnectACK));
     getACK(ack);
     printw("Recieved ID: %i  Status:%i\n", ack->id, ack->status);
+    int id = ack->id;
     free(ack);
     refresh();
 
@@ -51,7 +57,7 @@ int main(int argc, char * argv[])
 
     struct timeval t;
     t.tv_sec = 0;
-    t.tv_usec = 500;
+    t.tv_usec = 500000;
     
     int q = 0;
 
@@ -76,13 +82,28 @@ int main(int argc, char * argv[])
                         q = 1;
                     }
                     printw("STDIN:%c\n",c); 
+                    Chat * ch = (Chat *)malloc(sizeof(Chat));
+                    ch->id = id;
+                    ch->status = 0;
+                    ch->messageLen = 1;
+                    char * message = &ch->message;
+                    strcpy(message,&c); 
+                    //strcpy(msg, &c);
+                    //strcat(msg, "\0");
+                    //strcpy(ch->message, msg);
+                    if(!sendChat(ch))
+                    {
+                        printw("Error sending chat\n");
+                    }
                     refresh();
                 }
 
                 Chat * ch = (Chat *)malloc(sizeof(Chat));
-                receiveChat(ch);
-                printw("%s\n",ch->message);
-                refresh();
+                if(!receiveChat(ch))
+                {
+                    printw("%s\n",ch->message);
+                    refresh();
+                }
                 free(ch);
         }
 
@@ -93,6 +114,16 @@ int main(int argc, char * argv[])
 
     }
 
+    quit();
+}
+
+void quit()
+{
+    Chat * ch = (Chat *)malloc(sizeof(Chat));
+    ch->id = 0;
+    ch->status = 1; //disconnect bit
+    sendChat(ch);
+    endwin();
     closeServer();
     exit(EXIT_SUCCESS);
 }
