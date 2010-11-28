@@ -250,8 +250,27 @@ void* thread_proc(void *arg)
 
                     int tmp = recv(sock, sChat, recvSize,0);
                     printf("Rececived string of length: %i\n", tmp);
-                    printf("Our string is char long:%i\n",strlen(sChat));
+                    printf("Our string is char long:%i\n",(int)strlen(sChat));
                     printf("%s\n", sChat);
+
+                    Chat * ch = (Chat *)malloc(sizeof(Chat));
+                    
+                    char * delim = strtok(sChat,"`");
+
+                    ch->id = atoi(delim);
+                    delim = strtok(NULL,"`");
+                    ch->status = atoi(delim);
+                    delim = strtok(NULL,"`");
+                    ch->messageLen = atoi(delim);
+                    delim = strtok(NULL,"`");
+                    strcpy(ch->message,delim);
+                    
+                    printf("ID:%i\n",ch->id);
+                    printf("STATUS:%i\n",ch->status);
+                    printf("MessageLEN:%i\n",ch->messageLen);
+                    printf("Message:%s\n",ch->message);
+
+
 
                     //printf("Recieved id:%i, status:%i, msg len:%i, message:%c\n",ch->id,ch->status,ch->messageLen,*ch->message);
 

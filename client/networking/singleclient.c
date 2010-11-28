@@ -88,7 +88,7 @@ int main(int argc, char * argv[])
                     ch->status = 2;
                     char * message = &ch->message;
                     //strcpy(message,&c); 
-                    strcpy(message,"Hi, why does this error out?"); 
+                    strcpy(message,"I have the most beautiful wife"); 
                     //strcat(message,"\0");
                     //strcpy(msg, &c);
                     //strcat(msg, "\0");
