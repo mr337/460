@@ -2,7 +2,7 @@ CC = gcc
 CFLAGS = -Wall -g
 
 BIN = sc
-OBJS = singleclient.c networking.c
+OBJS = singleclient.c ../networking.c
 LIBS = -lncurses
 
 all: $(OBJS)

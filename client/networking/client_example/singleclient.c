@@ -8,7 +8,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <curses.h>
-#include "networking.h"
+#include "../networking.h"
 
 void quit();
 
