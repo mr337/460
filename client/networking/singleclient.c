@@ -84,10 +84,12 @@ int main(int argc, char * argv[])
                     printw("STDIN:%c\n",c); 
                     Chat * ch = (Chat *)malloc(sizeof(Chat));
                     ch->id = id;
-                    ch->status = 0;
-                    ch->messageLen = 1;
+                    ch->messageLen = 10;
+                    ch->status = 2;
                     char * message = &ch->message;
-                    strcpy(message,&c); 
+                    //strcpy(message,&c); 
+                    strcpy(message,"Hi, why does this error out?"); 
+                    //strcat(message,"\0");
                     //strcpy(msg, &c);
                     //strcat(msg, "\0");
                     //strcpy(ch->message, msg);

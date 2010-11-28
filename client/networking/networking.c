@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -62,12 +63,38 @@ int getACK(ConnectACK * cACK)
 
 int sendChat(Chat * ch)
 {
-    char * lala = &ch->message;
-    printf("Sending:%s\n", lala);
-    return send(sock,ch, sizeof(ch),0);
+    //char * lala = &ch->message;
+    //printf("Sending:%s\n", lala);
+    char * sChat = (char*)malloc(1000);
+    int size = serializeChat(sChat, ch);
+    if(!size)
+    {
+        printw("Error serializing struct\n");
+        return 0;
+    }
+    else
+    {//send size of string and them data
+        int recvSize = 0;
+        send(sock,&size,sizeof(int),0);
+        recv(sock, &recvSize, sizeof(int),0);
+        return send(sock,sChat, size,0);
+    }
 }
 
 int receiveChat(Chat * ch)
 {
     return recv(sock, ch, sizeof(Chat),MSG_DONTWAIT);
+}
+
+int serializeChat(char * msg, Chat * ch)
+{
+   sprintf(msg,"%i`%i`%i`%s",ch->id,ch->status,ch->messageLen,ch->message);
+    printw("%s\n",msg);
+    printw("Size:%i\n",strlen(msg));
+   return strlen(msg);
+}
+
+int deserializeChat(char * msg, Chat * ch)
+{
+    return 0;
 }

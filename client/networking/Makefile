@@ -1,14 +1,12 @@
 CC = gcc
 CFLAGS = -Wall -g
 
-BIN = client
-OBJS = client.c networking.c
+BIN = sc
+OBJS = singleclient.c networking.c
+LIBS = -lncurses
 
 all: $(OBJS)
-	$(CC) $(CFLAGS) -o $(BIN) $(OBJS)
-
-sc:
-	$(CC) $(CFLAGS) -o sc singleclient.c networking.c -lncurses
+	$(CC) $(CFLAGS) -o $(BIN) $(OBJS) $(LIBS)
 
 clean:
 	rm $(BIN) 

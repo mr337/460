@@ -6,6 +6,9 @@
 #include <time.h>
 #include "networking.h"
 
+//TO COMPILE
+//gcc -Wall -g -o client client.c networking.c
+
 void child_func(int childnum);
 
 int x;

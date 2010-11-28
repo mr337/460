@@ -233,19 +233,33 @@ void* thread_proc(void *arg)
                 {
                     //Chat * ch = (Chat *)malloc(sizeof(Chat));
                     //recv(sock, (char*)ch, sizeof(Chat), 0);
-                    recv(sock, (void *)chatBuffer, sizeof(Chat), 0);
-                    Chat * ch = &chatBuffer;
+                    //recv(sock, (void *)chatBuffer, sizeof(Chat), 0);
+                    //Chat * ch = &chatBuffer;
 
                     //printf("got someting ahahahahahahahah");
                     
-                    printf("Got:%c\n",*ch->message);
-                    //printf("Recieved id:%i, status:%i, msg len:%i, message:%s",ch->id,ch->status,ch->messageLen,*ch->message);
+                    //printf("Got:%c\n",*ch->message);
 
-                    if(ch->status == 1)
-                    {
-                        quit = 1;
-                        break;
-                    }
+                    //get size then serialized data
+                    int recvSize = 0;
+                    recv(sock,&recvSize, sizeof(int),0);
+                    send(sock, &recvSize, sizeof(int),0);
+                    printf("Recieved %i bytes\n", recvSize);
+                    char * sChat = malloc(recvSize);
+
+
+                    int tmp = recv(sock, sChat, recvSize,0);
+                    printf("Rececived string of length: %i\n", tmp);
+                    printf("Our string is char long:%i\n",strlen(sChat));
+                    printf("%s\n", sChat);
+
+                    //printf("Recieved id:%i, status:%i, msg len:%i, message:%c\n",ch->id,ch->status,ch->messageLen,*ch->message);
+
+                    //if(ch->status == 1)
+                    //{
+                    //    quit = 1;
+                    //    break;
+                    //}
 
                     //printf("%s\n",*ch->message);
                     //printf("Fired:%i\n",tmptrack);

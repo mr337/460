@@ -22,11 +22,11 @@ typedef struct
 
 typedef struct
 {
-    char * message[UNAMELENGTH+MESSAGELENGTH]; //message is as long as messagelength, but when resending server
-                                               //will attach username 
     int id; //if not set to 0 then means it's a keyboard update (10 people)
     int status; //used for lark, yelp, gauntlet - see project notes
     int messageLen; //message length for reading
+    char message[UNAMELENGTH+MESSAGELENGTH]; //message is as long as messagelength, but when resending server
+                                               //will attach username 
 }Chat;
 
 int connectToServer(char *, int);
@@ -37,6 +37,8 @@ int sendConnectInit(ConnectInit * cI);
 int getACK(ConnectACK * cI);
 int sendChat(Chat * ch);
 int receiveChat(Chat * ch);
+int serializeChat(char * msg, Chat * ch);
+int deserializeChat(char * msg, Chat * ch);
 
 
 //ConnectACK notes
