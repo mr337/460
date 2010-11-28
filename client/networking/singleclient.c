@@ -76,23 +76,18 @@ int main(int argc, char * argv[])
             default:
                 if(FD_ISSET(0,&tfds))
                 {
-                    char c = getch();
-                    if(c == 'q')
-                    {
-                        q = 1;
-                    }
-                    printw("STDIN:%c\n",c); 
                     Chat * ch = (Chat *)malloc(sizeof(Chat));
                     ch->id = id;
-                    ch->messageLen = 10;
-                    ch->status = 2;
-                    char * message = &ch->message;
-                    //strcpy(message,&c); 
-                    strcpy(message,"I have the most beautiful wife"); 
-                    //strcat(message,"\0");
-                    //strcpy(msg, &c);
-                    //strcat(msg, "\0");
-                    //strcpy(ch->message, msg);
+                    ch->status = 0;
+                    getstr(ch->message);
+                    ch->messageLen = strlen(ch->message);
+                    printw("STDIN:%s\n",ch->message);
+                    if(!strcmp(ch->message, "q"))
+                    {
+                        ch->status = 1;
+                        q = 1;
+                    }
+
                     if(!sendChat(ch))
                     {
                         printw("Error sending chat\n");

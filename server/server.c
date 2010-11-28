@@ -27,7 +27,7 @@ int messageCount;
 char **userNames;
 int * userStatus;
 int * messageStatus; //0-have not recieved message, 1-recieved message, -1 dropped user
-char * getMessage(int id);
+int getMessage(int id, char * msg);
 
 sem_t lusers;
 sem_t lmessage; 
@@ -113,6 +113,8 @@ int main(int argc, char *argv[])
         return 0;
     }
 
+    int startLinkedList = 1;
+
     while(1)
     {
         //printf("SERVER: Now Accepting Clients \n");
@@ -133,6 +135,15 @@ int main(int argc, char *argv[])
         {
             printf("Userid: %i    Name: %s\n",i, userNames[i]);
         }
+
+        usleep(500000);
+
+        if(startLinkedList == 1)
+        {
+            startLinkedList = 0;
+            nextNode();
+        }
+
     }
 
     return(EXIT_SUCCESS);
@@ -143,7 +154,6 @@ void* thread_proc(void *arg)
     int sock;
     int id=0;
     char cIBuffer[sizeof(ConnectInit)];
-    char chatBuffer[sizeof(Chat)];
 
     sock = (int) arg;
 
@@ -212,9 +222,16 @@ void* thread_proc(void *arg)
     t.tv_sec = 0;
     t.tv_usec = 300000; 
 
-    messageStatus[id] = 1; //ready to relay messages
+    messageStatus[id] = 0; //ready to relay messages
     int quit = 0;
-    int tmptrack = 0;
+
+    //adding broadcast message
+    char * joinBroadcast = (char*)malloc(80); 
+    sprintf(joinBroadcast,"%i`%i`%i,%s%s",id,0,50,name," has joined");
+    sem_wait(&lmessage);
+    addMessage(joinBroadcast);
+    sem_post(&lmessage);
+    free(joinBroadcast);
 
     printf("Getting ready for chat loop for user id:%i\n", id);
 
@@ -231,32 +248,22 @@ void* thread_proc(void *arg)
             default:
                 if(FD_ISSET(sock,&tmpfds))
                 {
-                    //Chat * ch = (Chat *)malloc(sizeof(Chat));
-                    //recv(sock, (char*)ch, sizeof(Chat), 0);
-                    //recv(sock, (void *)chatBuffer, sizeof(Chat), 0);
-                    //Chat * ch = &chatBuffer;
-
-                    //printf("got someting ahahahahahahahah");
-                    
-                    //printf("Got:%c\n",*ch->message);
+                    Chat * ch = (Chat *)malloc(sizeof(Chat));
 
                     //get size then serialized data
                     int recvSize = 0;
                     recv(sock,&recvSize, sizeof(int),0);
                     send(sock, &recvSize, sizeof(int),0);
-                    printf("Recieved %i bytes\n", recvSize);
                     char * sChat = malloc(recvSize);
+                    char * token = malloc(recvSize);
+                    if(!recv(sock, sChat, recvSize,0))
+                    {
+                        printf("Error reading chat serialization, use id:%i\n",id);
+                    }
 
+                    strcpy(token,sChat);
 
-                    int tmp = recv(sock, sChat, recvSize,0);
-                    printf("Rececived string of length: %i\n", tmp);
-                    printf("Our string is char long:%i\n",(int)strlen(sChat));
-                    printf("%s\n", sChat);
-
-                    Chat * ch = (Chat *)malloc(sizeof(Chat));
-                    
-                    char * delim = strtok(sChat,"`");
-
+                    char * delim = strtok(token,"`");
                     ch->id = atoi(delim);
                     delim = strtok(NULL,"`");
                     ch->status = atoi(delim);
@@ -265,53 +272,60 @@ void* thread_proc(void *arg)
                     delim = strtok(NULL,"`");
                     strcpy(ch->message,delim);
                     
-                    printf("ID:%i\n",ch->id);
-                    printf("STATUS:%i\n",ch->status);
-                    printf("MessageLEN:%i\n",ch->messageLen);
-                    printf("Message:%s\n",ch->message);
+                    //printf("ID:%i\n",ch->id);
+                    //printf("STATUS:%i\n",ch->status);
+                    //printf("MessageLEN:%i\n",ch->messageLen);
+                    //printf("Message:%s\n",ch->message);
 
 
+                    //if chat status is 1, the user is quiting
+                    if(ch->status == 1)
+                    {//may need to add some code announcing user is quiting
+                        quit = 1;
+                        free(ch);
+                        free(sChat);
+                        break;
+                    }
 
-                    //printf("Recieved id:%i, status:%i, msg len:%i, message:%c\n",ch->id,ch->status,ch->messageLen,*ch->message);
-
-                    //if(ch->status == 1)
-                    //{
-                    //    quit = 1;
-                    //    break;
-                    //}
-
-                    //printf("%s\n",*ch->message);
-                    //printf("Fired:%i\n",tmptrack);
-                    //tmptrack++;
-
-                    //char * message = malloc(UNAMELENGTH+MESSAGELENGTH*sizeof(char)); 
-                    //strcpy(message, name);
-                    //strcat(message,": ");
-                    //strncat(message, *ch->message, UNAMELENGTH+MESSAGELENGTH);
 
                     //printf("%s\n",message);
 
-                    //sem_wait(&lmessage);
-                    //addMessage(message);
-                    //sem_post(&lmessage);
-                    //
-                    //free(ch);
-                    //free(message);
+                    sem_wait(&lmessage);
+                    addMessage(sChat);
+                    sem_post(&lmessage);
+                    
+                    free(ch);
+                    free(sChat);
                 }
 
-                //sem_wait(&lmessage);
-                //char * chatMsg = getMessage(id); 
+                char * chatMsg = malloc(UNAMELENGTH+MESSAGELENGTH); 
+                sem_wait(&lmessage);
+                
+                if(!getMessage(id,chatMsg))
+                {//nothing to send
+                    sem_post(&lmessage);
+                    free(chatMsg);
+                    continue;
+                }
+
+
                 //sem_post(&lmessage);
-                //if(strcmp(chatMsg,"\0")!=0)
-                //{
-                //    Chat * c = &chatBuffer;
-                //    c->id = 0;
-                //    c->status = 0;
-                //    c->messageLen = sizeof(chatMsg);
-                //    //c->message = chatMsg;
-                //    strcpy(c->message,chatMsg);
-                //    send(sock, &chatBuffer, sizeof(c), 0);
-                //}
+                //    //char * delim = strtok(sChat,"`");
+                //    //ch->id = atoi(delim);
+                //    //delim = strtok(NULL,"`");
+                //    //ch->status = atoi(delim);
+                //    //delim = strtok(NULL,"`");
+                //    //ch->messageLen = atoi(delim);
+                //    //delim = strtok(NULL,"`");
+                //    //strcpy(ch->message,delim);
+                
+                printf("BROADCAST:%s\n",chatMsg);   
+                    
+
+                sem_post(&lmessage);
+
+                free(chatMsg);
+                //printf("Never get here 2\n");
         }
 
         if(quit == 1)
@@ -365,7 +379,7 @@ int checkDupUserName(char * name)
 void addMessage(char * msg)
 {
     //add to linked list
-    printf("%s\n",msg);
+    printf("Added to global message: %s\n",msg);
     addNode(msg);
 }
 
@@ -394,21 +408,26 @@ int checkRecipients()
     return 1;
 }
 
-char * getMessage(int id)
+int getMessage(int id, char * msg)
 {
-    if(checkRecipients())
-    {
-       //all users have recieved message, moving to next message 
-       nextNode();
-    }
-
     if(messageStatus[id] !=0)
-    {//return null because wouldn't want to repeat message
-        return NULL; 
+    {//return 0 becuase nothing to do
+        return 0; 
     }
     else
-    {
-      //return message;
-        return getNode();
+    {//return 1 and copy message
+        printf("Did not get message, retrieveing!\n");
+        if(checkRecipients())
+        {
+            //all users have recieved message, moving to next message 
+            printf("Moving to next node\n");
+            nextNode();
+        }
+
+        messageStatus[id] = 1;
+        printf("HAHAH\n");
+        printf("GetNode():%s\n",getNode());
+        strcpy(msg,getNode());
+        return 1;
     }
 }

@@ -41,6 +41,20 @@ int serializeChat(char * msg, Chat * ch);
 int deserializeChat(char * msg, Chat * ch);
 
 
+//Struct NOTES - PLEASE READ!
+//I cannot send the structs over as chars, due to bin packing and possible client server architecture difference 
+//send as a char is almost suicice. Thought now all the problems apply to use I would be much happier
+//doing a plain text format. So with that in mind I have adopeted this format for each of the chars
+//
+//ConnectInit = "majorVersion`minorVersion`username"
+//ConnectAck = "status`id"
+//Chat = "id`status`messageLength`message" (make sure message is \0 terminated, using netwking.c will ensure this)
+//
+//I have provided for the clients a networking.h/c for desearializing the strings that come in, they should
+//return strucst, piece of cake. FYI all send and recv do a tiny handshake that solve 2 problems, first is
+//sending message of how long the serialized data is, the second is the confirm the client is there.
+
+
 //ConnectACK notes
 //status bits: 0 - no erros, connection working
 //             1 - too many conencted users, please try again
@@ -50,7 +64,8 @@ int deserializeChat(char * msg, Chat * ch);
 
 
 //Chat notes
-//status bits: 0 - nothing unusual
-//status bits: 1 - disconnecting...
+//status bits: 0 - nothing unusual, global broadcast
+//status bits: 1 - user disconnecting...
+//status bits: 2 - this is a keyboard update
 
 #endif

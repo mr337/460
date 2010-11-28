@@ -63,8 +63,6 @@ int getACK(ConnectACK * cACK)
 
 int sendChat(Chat * ch)
 {
-    //char * lala = &ch->message;
-    //printf("Sending:%s\n", lala);
     char * sChat = (char*)malloc(1000);
     int size = serializeChat(sChat, ch);
     if(!size)
@@ -88,10 +86,8 @@ int receiveChat(Chat * ch)
 
 int serializeChat(char * msg, Chat * ch)
 {
-   sprintf(msg,"%i`%i`%i`%s",ch->id,ch->status,ch->messageLen,ch->message);
-    printw("%s\n",msg);
-    printw("Size:%i\n",strlen(msg));
-   return strlen(msg);
+    //had to increment by 1, strpinf does not count the added \0
+    return 1+sprintf(msg,"%i`%i`%i`%s",ch->id,ch->status,ch->messageLen,ch->message);
 }
 
 int deserializeChat(char * msg, Chat * ch)
