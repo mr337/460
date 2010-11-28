@@ -40,6 +40,7 @@ int sendChat(Chat * ch);
 int receiveChat(Chat * ch);
 int serializeChat(char * msg, Chat * ch);
 int deserializeChat(char * msg, Chat * ch);
+int getSock();
 
 
 //Struct NOTES - PLEASE READ!

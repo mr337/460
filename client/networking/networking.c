@@ -51,6 +51,11 @@ int closeServer()
 
 }
 
+int getSock()
+{
+    return sock;
+}
+
 int sendConnectInit(ConnectInit * cI)
 {
     return send(sock, cI, sizeof(ConnectInit), 0);
@@ -86,7 +91,20 @@ int sendChat(Chat * ch)
 
 int receiveChat(Chat * ch)
 {
-    return recv(sock, ch, sizeof(Chat),MSG_DONTWAIT);
+    int recvSize = 0;
+    recv(sock, &recvSize, sizeof(int),0);
+    send(sock,&recvSize,sizeof(int),0);
+    char * sChat = malloc(recvSize);
+    if(!recv(sock, sChat,recvSize,0))
+    {
+        return 2; //something wrong
+    }
+
+    deserializeChat(sChat,ch);
+    return 0; //no errors    
+    free(sChat);
+
+
 }
 
 int serializeChat(char * msg, Chat * ch)
@@ -97,5 +115,13 @@ int serializeChat(char * msg, Chat * ch)
 
 int deserializeChat(char * msg, Chat * ch)
 {
-    return 0;
+    char * delim = strtok(msg,"`");
+    ch->id = atoi(delim);
+    delim = strtok(NULL,"`");
+    ch->status = atoi(delim);
+    delim = strtok(NULL,"`");
+    ch->messageLen = atoi(delim);
+    delim = strtok(NULL,"`");
+    strcpy(ch->message,delim);
+    return 0; //0 for now errors
 }

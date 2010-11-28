@@ -51,9 +51,12 @@ int main(int argc, char * argv[])
     free(ack);
     refresh();
 
+    int sock = getSock();
+
     fd_set fds;
     FD_ZERO(&fds);
     FD_SET(0,&fds);
+    FD_SET(sock,&fds);
 
     struct timeval t;
     t.tv_sec = 0;
@@ -68,7 +71,7 @@ int main(int argc, char * argv[])
         ttmp.tv_sec = 0;
         ttmp.tv_usec = t.tv_usec;
 
-        switch(select(1,&tfds,NULL,NULL,&ttmp))
+        switch(select(sock+1,&tfds,NULL,NULL,&ttmp))
         {
             case -1:
                 printw("Something wrong\n");
@@ -79,10 +82,16 @@ int main(int argc, char * argv[])
                     Chat * ch = (Chat *)malloc(sizeof(Chat));
                     ch->id = id;
                     ch->status = 0;
-                    getstr(ch->message);
+
+                    //have to manualy add the User: message
+                    //unless it's an update, chat bit = 2
+                    char * tmp = malloc(UNAMELENGTH+MESSAGELENGTH);
+
+                    getstr(tmp);
+                    sprintf(ch->message,"%s: %s",argv[1],tmp);
                     ch->messageLen = strlen(ch->message);
-                    printw("STDIN:%s\n",ch->message);
-                    if(!strcmp(ch->message, "q"))
+                    //printw("STDIN:%s\n",ch->message);
+                    if(!strcmp(tmp, "q"))
                     {
                         ch->status = 1;
                         q = 1;
@@ -93,15 +102,19 @@ int main(int argc, char * argv[])
                         printw("Error sending chat\n");
                     }
                     refresh();
-                }
 
-                Chat * ch = (Chat *)malloc(sizeof(Chat));
-                if(!receiveChat(ch))
-                {
-                    printw("%s\n",ch->message);
-                    refresh();
+                    free(tmp);
                 }
-                free(ch);
+                if(FD_ISSET(sock,&tfds))
+                {
+                    Chat * ch = (Chat *)malloc(sizeof(Chat));
+                    if(!receiveChat(ch))
+                    {
+                        printw("%s\n",ch->message);
+                        refresh();
+                    }
+                    free(ch);
+                }
         }
 
         if(q == 1)

@@ -228,7 +228,7 @@ void* thread_proc(void *arg)
 
     //adding broadcast message
     char * joinBroadcast = (char*)malloc(80); 
-    sprintf(joinBroadcast,"%i`%i`%i,%s%s",id,0,50,name," has joined");
+    sprintf(joinBroadcast,"%i`%i`%i`%s%s",id,0,50,name," has joined");
     sem_wait(&lmessage);
     addMessage(joinBroadcast);
     sem_post(&lmessage);
@@ -281,8 +281,10 @@ void* thread_proc(void *arg)
                     delim = strtok(NULL,"`");
                     ch->status = atoi(delim);
                     delim = strtok(NULL,"`");
-                    ch->messageLen = atoi(delim); //all I need is the message lengts, may optimize later
+                    ch->messageLen = atoi(delim); //all I need is the message length, may optimize later
                     delim = strtok(NULL,"`");
+
+                    free(token);
                     
                     //printf("ID:%i\n",ch->id);
                     //printf("STATUS:%i\n",ch->status);
@@ -324,27 +326,20 @@ void* thread_proc(void *arg)
                 sem_wait(&lmessage);
                 
                 if(!getMessage(id,chatMsg))
-                {//nothing to send
+                {//nothing to send, restart loop
                     sem_post(&lmessage);
                     free(chatMsg);
                     continue;
                 }
 
+                sem_post(&lmessage);
 
-                //sem_post(&lmessage);
-                //    //char * delim = strtok(sChat,"`");
-                //    //ch->id = atoi(delim);
-                //    //delim = strtok(NULL,"`");
-                //    //ch->status = atoi(delim);
-                //    //delim = strtok(NULL,"`");
-                //    //ch->messageLen = atoi(delim);
-                //    //delim = strtok(NULL,"`");
-                //    //strcpy(ch->message,delim);
+                int recvSize = strlen(chatMsg)+1;
+                send(sock, &recvSize,sizeof(int),0);
+                recv(sock, &recvSize,sizeof(int),0);
+                recvSize = send(sock,chatMsg,recvSize,0);
                 
                 printf("BROADCAST USER %s:%s\n",name,chatMsg);   
-                    
-
-                sem_post(&lmessage);
 
                 free(chatMsg);
                 //printf("Never get here 2\n");
@@ -401,7 +396,7 @@ int checkDupUserName(char * name)
 void addMessage(char * msg)
 {
     //add to linked list
-    printf("Added to global message: %s\n",msg);
+    //printf("Added to global message: %s\n",msg);
     addNode(msg);
 }
 
@@ -412,7 +407,7 @@ int checkRecipients()
     {
         if(messageStatus[i] == 0)
         {
-            printf("Not all recip have got the message\n");
+            //printf("Not all recip have got the message\n");
             return 0;
         }
     }
@@ -428,7 +423,7 @@ int checkRecipients()
         }
     }
 
-    printf("All recip have got the message\n");
+    //printf("All recip have got the message\n");
 
     return 1;
 }
@@ -441,14 +436,14 @@ int getMessage(int id, char * msg)
     {//return 0 becuase nothing to do
         if(getLength() > 1 && checkRecipients())
         {
-            printf("Moving next node\n");
+            //printf("Moving next node\n");
             nextNode();
         }
         return 0; 
     }
     else
     {//return 1 and copy message
-        printf("Did not get message, retrieveing!\n");
+        //printf("Did not get message, retrieveing!\n");
 
         messageStatus[id] = 1;
         //printf("GetNode():%s\n",getNode());
