@@ -1,4 +1,6 @@
 #include "gui.h"
+#include "../networking/networking.h"
+#include "../../server/linkedlist.h"
 #include <ncurses.h>
 #include <string.h>
 #include <stdarg.h>
@@ -27,10 +29,19 @@ void write_line(char *message, int window_width, WINDOW *win)
 {
     wprintw(win, " ");
     write_to_window(message, window_width, win);
+    wrefresh(win);
+}
+
+void write_to_transcript(char *message)
+{
+    write_line(message, t_win.w, t_win.window);
+    write_line(" ", e_win.w, e_win.window);
+    wmove(e_win.window, 0,0);
+    scrollok(e_win.window, 0);
 }
 
 void write_to_windowf(char *message, int window_width, WINDOW *win, ...)
-{
+{  
     char final_message[50];
     int blank_space;
     va_list list;
@@ -55,16 +66,19 @@ void initialize_colors()
     init_pair(1, COLOR_GREEN, COLOR_RED);
     init_pair(2, COLOR_GREEN, COLOR_BLUE);
     init_pair(3, COLOR_BLUE, COLOR_CYAN);
+    init_pair(4, COLOR_BLACK, COLOR_YELLOW);
+    init_pair(5, COLOR_BLACK, COLOR_WHITE);
 }
 
 void initialize_windows()
 {
+    int i, j;
     initialize_colors();
 
     t_win.w = 40;
     t_win.h = 23;
     t_win.x = 0;
-    t_win.y = 0;
+    t_win.y = 0; 
     t_win.window = newwin(t_win.h, t_win.w, t_win.y, t_win.x);
 
     p_win.w = 40;
@@ -95,48 +109,71 @@ void initialize_windows()
     initialize_window(s_win.window, s_win.h, s_win.w);
     initialize_window(e_win.window, e_win.h, e_win.w);
 
-    write_line("This is a test.", t_win.w, t_win.window);
-
     wrefresh(t_win.window);
     wrefresh(p_win.window);
     wrefresh(s_win.window);
     wrefresh(e_win.window);
+
+    for ( i = 0; i < 2; i++ ) {
+        for ( j = 0; j < 5; j++ ) {
+            int index = j + (5 * i);
+            int color = 4 + (index % 2);
+            u_wins[index].w = 20;
+            u_wins[index].h = 3;
+            u_wins[index].x = 40 + (20 * i);
+            u_wins[index].y = j * 3 + 4;
+            u_wins[index].window = newwin(u_wins[index].h,
+                                          u_wins[index].w,
+                                          u_wins[index].y,
+                                          u_wins[index].x);
+
+            wcolor_set(u_wins[index].window, color, NULL);
+            initialize_window(u_wins[index].window,
+                              u_wins[index].h,
+                              u_wins[index].w);
+            wrefresh(u_wins[index].window);
+        }
+    }
+    scrollok(e_win.window, 0);
+    wmove(e_win.window, 0, 0);    
 }
 
 
 void draw_main_interface()
 {
-/*    transcript_win = newwin(23, 40, 0, 0);
-    program_info_win = newwin(3, 40, 0, 40);
-    status_win = newwin(3, 40, 20, 40);
-    editing_win = newwin(1, 80, 23, 0); 
-
-    
-    wcolor_set(transcript_win, 1, NULL);
-    wcolor_set(program_info_win, 2, NULL);
-    wcolor_set(status_win, 3, NULL);
-    wcolor_set(editing_win, 2, NULL);
-
-    initialize_window(transcript_win, 23, 40);
-    initialize_window(program_info_win, 3, 40);
-    initialize_window(status_win, 3, 40);
-    initialize_window(editing_win, 1, 80); 
-
-
-    write_line("This is a test.", 40, transcript_win);
-    write_line("Also a test.", 40, transcript_win);
-
-    wrefresh(transcript_win);
-    wrefresh(program_info_win);
-    wrefresh(status_win);*/
+    char message_buffer[100];
+    int message_index = 0;
     initialize_windows();
-    getch();
+    while ( 1 )
+    {
+        char input = wgetch(e_win.window);    
+        if ( input == CTRL_Q )
+        {
+            break;
+        } else if ( input == 0xA ) {
+            werase(e_win.window);
+            write_to_transcript(message_buffer);
+            message_buffer[0] = '\0';
+            message_index = 0;        
+        } else if ( input == CTRL_L ) {
+            write_to_transcript("Lurk!");
+        } else if ( input == CTRL_P ) {
+            wscrl(t_win.window, 1);
+            wrefresh(t_win.window);
+        } else if ( input == CTRL_N ) {
+            wscrl(t_win.window, -1);
+            wrefresh(t_win.window);
+        } else {
+            message_buffer[message_index++] = input;
+            message_buffer[message_index] = '\0';
+        }
+    }
 }
 
 void initialize_gui()
 {
     initscr();
-    cbreak();
+    raw();
     if (has_colors() == FALSE)
     {
         endwin();
