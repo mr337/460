@@ -163,7 +163,9 @@ void draw_main_interface()
         } else if ( input == CTRL_N ) {
             wscrl(t_win.window, -1);
             wrefresh(t_win.window);
-        } else {
+        } else if ( input == BACKSPACE ) {
+            message_index--;
+        } else if (input > 0x20) {
             message_buffer[message_index++] = input;
             message_buffer[message_index] = '\0';
         }
