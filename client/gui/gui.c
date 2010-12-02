@@ -1,5 +1,4 @@
 #include "gui.h"
-#include "../networking/networking.h"
 #include "../../server/linkedlist.h"
 #include <ncurses.h>
 #include <string.h>

@@ -1,4 +1,5 @@
 #include <ncurses.h>
+#include "../networking/networking.h"
 #ifndef GUI_H
 #define GUI_H
 
@@ -20,4 +21,16 @@ typedef struct
 #define CTRL_W 0x17
 #define CTRL_Y 0x19
 #define BACKSPACE 128 
+
+void write_to_window(char *message, int window_width, WINDOW *win);
+void write_line(char *message, int window_width, WINDOW *win);
+void write_to_transcript(char *message);
+void write_to_windowf(char *message, int window_width, WINDOW *win, ...);
+void initialize_window(WINDOW *win, int window_height, int window_width);
+void initialize_colors();
+void initialize_windows();
+void draw_main_interface();
+void initialize_gui();
+void cleanup_gui();
+
 #endif

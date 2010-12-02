@@ -1,4 +1,5 @@
-#include "gui.c"
+//#include "gui.c"
+#include "gui.h"
 
 void main(int argc, char *argv[])
 {
