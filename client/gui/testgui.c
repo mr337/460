@@ -6,3 +6,4 @@ void main(int argc, char *argv[])
     draw_main_interface();
     cleanup_gui();
 }
+
