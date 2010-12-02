@@ -20,7 +20,7 @@ typedef struct
 #define CTRL_U 0X15
 #define CTRL_W 0x17
 #define CTRL_Y 0x19
-#define BACKSPACE 128 
+#define BACKSPACE 127 
 
 void write_to_window(char *message, int window_width, WINDOW *win);
 void write_line(char *message, int window_width, WINDOW *win);
