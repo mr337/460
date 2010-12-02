@@ -19,5 +19,5 @@ typedef struct
 #define CTRL_U 0X15
 #define CTRL_W 0x17
 #define CTRL_Y 0x19
-
+#define BACKSPACE 128 
 #endif
