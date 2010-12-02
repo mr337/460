@@ -1,5 +1,6 @@
 #include "gui.h"
 #include "../../server/linkedlist.h"
+#include "transcriptlist.h"
 #include <ncurses.h>
 #include <string.h>
 #include <stdarg.h>
@@ -146,27 +147,51 @@ void draw_main_interface()
     while ( 1 )
     {
         char input = wgetch(e_win.window);    
-        if ( input == CTRL_Q )
+        if (iscntrl(input))
         {
-            break;
-        } else if ( input == 0xA ) {
-            werase(e_win.window);
-            write_to_transcript(message_buffer);
-            message_buffer[0] = '\0';
-            message_index = 0;        
-        } else if ( input == CTRL_L ) {
-            write_to_transcript("Lurk!");
-        } else if ( input == CTRL_P ) {
-            wscrl(t_win.window, 1);
-            wrefresh(t_win.window);
-        } else if ( input == CTRL_N ) {
-            wscrl(t_win.window, -1);
-            wrefresh(t_win.window);
-        } else if ( input == BACKSPACE ) {
-            message_index--;
-        } else if (input > 0x20) {
+          if ( input == CTRL_Q )
+          {
+              break;
+          } else if ( input == 0xA ) {
+              werase(e_win.window);
+              write_to_transcript(message_buffer);
+              updateTranscript(message_buffer);
+              message_buffer[0] = '\0';
+              message_index = 0;        
+          } else if ( input == CTRL_L ) {
+              write_to_transcript("Lurk!");
+          } else if ( input == CTRL_P ) {
+              wscrl(t_win.window, -1);
+              if ( scrollUp() == 1) {
+                char *line = getTop();
+                wmove(t_win.window, 0, 0);
+                write_to_window(line, t_win.w, t_win.window);                
+              }
+                wrefresh(t_win.window);
+          } else if ( input == CTRL_N ) {
+              if ( scrollDown() == 1) {                  
+                  wscrl(t_win.window, 1);          
+                  char *line = getBottom();
+                  wmove(t_win.window, 79, 0);
+                  write_to_window(line, t_win.w, t_win.window);
+                  wrefresh(t_win.window);
+              }
+          } else if ( input == BACKSPACE ) {
+              if (message_index > 0) {
+                  message_buffer[message_index] = '\0';
+                  message_index--;
+                  int x = getcurx(e_win.window);
+                  wmove(e_win.window, getcury(e_win.window), x - 1);
+                  waddch(e_win.window, ' ');
+                  wmove(e_win.window, getcury(e_win.window), x - 1);
+              }
+          }
+        }
+        else
+        {
             message_buffer[message_index++] = input;
-            message_buffer[message_index] = '\0';
+            message_buffer[message_index] = '\0';            
+            waddch(e_win.window, input);
         }
     }
 }
@@ -175,6 +200,7 @@ void initialize_gui()
 {
     initscr();
     raw();
+    noecho();
     if (has_colors() == FALSE)
     {
         endwin();
