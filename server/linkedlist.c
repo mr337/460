@@ -47,8 +47,10 @@ int nextNode()
     {
         //TODO need to free up the memory from the old node
         //struct node * old = head;
+        struct node * old = &head;
         head = head->next;
         length--;
+        free(old);
         return 0;
     }
     if(length == 1)
