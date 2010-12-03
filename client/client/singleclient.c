@@ -48,7 +48,9 @@ int main(int argc, char * argv[])
 
     //code to init the server with details
     ConnectInit * cI = (ConnectInit *) malloc(sizeof(ConnectInit));
-    username = &cI->userName;
+    //char * name = &cI->userName;
+    //strcpy(name, argv[1]);
+    cI->userName = username;
     cI->majorVersion = 1;
     cI->minorVersion = 9;
     sendConnectInit(cI);
