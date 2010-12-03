@@ -1,8 +1,8 @@
 CC = gcc
 CFLAGS = -Wall -g
 
-BIN = sc
-OBJS = singleclient.c networking.c
+BIN = client 
+OBJS = client.c ../networking/networking.c ../gui/gui.c ../gui/transcriptlist.c
 LIBS = -lncurses
 
 all: $(OBJS)
