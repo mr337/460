@@ -31,9 +31,58 @@ void write_to_transcript(char *message)
 
 void write_to_user_window(int user_id, char * message)
 {
-    //write_to_window(" ", u_wins[user_id].w, u_wins[user_id].window);
-    //write_to_window(message, u_wins[user_id].w, u_wins[user_id].window);
-    write_line(message, u_wins[user_id].w, u_wins[user_id].window);
+    int i,j;
+    int lastBreak = 0;
+    int lastSpace = 0;
+    int len = strlen(message);
+    int lineCount = 0;
+    char line[(MESSAGELENGTH / u_wins[user_id].w) + 1][u_wins[user_id].w];
+    
+    for ( i = 0; i < len; i++ )
+    {
+        if ( len > 0 ) {
+            if ( message[i] == ' ' ) {
+                lastSpace = i;
+            }
+        }
+
+        line[lineCount][i - lastBreak] = message[i];
+        if ( i == len - 1 ) {
+            line[lineCount][i+1] = '\0';
+            lineCount++; 
+            lastBreak = i;
+            lastSpace = i;
+        } else if ( (i - lastBreak) == u_wins[user_id].w - 1 ) {
+            if ( lastSpace > lastBreak ) {
+                line[lineCount][lastSpace - lastBreak] = '\0';
+
+                lastBreak = lastSpace + 1;
+                i = lastSpace;
+            } else {
+                line[lineCount][u_wins[user_id].w] = '\0';
+                lastBreak = i + 1;
+                lastSpace = i;
+            }
+            lineCount++;
+        }
+    }
+
+    scrollok(u_wins[user_id].window, 0);
+
+    if ( lineCount > 3 ) {
+        i = lineCount - 3;
+    } else {
+        i = 0;
+    }
+
+    j = 0;
+
+    for ( ; i < lineCount; i++ ) {
+        wmove(u_wins[user_id].window, j, 0);
+        wprintw(u_wins[user_id].window, line[i]);
+        j++;
+    }
+
     wrefresh(u_wins[user_id].window);
 }
 
@@ -302,13 +351,13 @@ void draw_main_interface()
     initialize_windows();
     write_to_program_window("This is\nA Test\nand junk");
     write_to_status_window("This is\nThe Status Window\nYay");
-    getch();
-    /*while ( 1 )
+    write_to_user_window(0, "This is a test of writing to the user window and i hope this works");
+    while ( 1 )
     {
         char input = wgetch(e_win.window);    
         if (handle_input(input))
             break;
-    }*/
+    }
 }
 
 void scroll_transcript_down()
