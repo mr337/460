@@ -22,10 +22,12 @@ typedef struct
 #define CTRL_Y 0x19
 #define BACKSPACE 127 
 #define ENTER 0xA
+#define STX 2
+#define ETX 3
 
 void write_to_window(char *message, int window_width, WINDOW *win);
 void write_line(char *message, int window_width, WINDOW *win);
-void write_to_transcript(char *message);
+void write_to_transcript(char *message, int check_for_gaudy);
 void write_to_windowf(char *message, int window_width, WINDOW *win, ...);
 void initialize_window(WINDOW *win, int window_height, int window_width);
 void initialize_colors();
