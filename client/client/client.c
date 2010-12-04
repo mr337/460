@@ -12,29 +12,35 @@
 #include "../gui/gui.h"
 
 void quit();
+char ip[15];
+int sock; 
+long send_count;
+long recieve_count;
 
 int main(int argc, char * argv[])
 {
 
-    if(argc != 3)
-    {
-        printf("Must be in format program Server Port\n");
-        exit(EXIT_SUCCESS);
-    }
+    //if(argc != 3)
+    //{
+    //    printf("Must be in format program Server Port\n");
+    //    exit(EXIT_SUCCESS);
+    //}
 
-    initscr();
-    noecho();
-    cbreak();
+    ConnectInit * cI = (ConnectInit *) malloc(sizeof(ConnectInit));
+
+    initialize_gui();
+    printw("Please enter a username:  ");
     refresh();
+    scanw("%s", cI->userName);
 
-    char username[UNAMELENGTH];
 
-    printw("Please enter a username: ");
-    scanf("%s", username);
+    printw("\nPlease enter IP address:  ");
+    refresh();
+    scanw("%s",ip);
+
 
     //connecto to server
-    //connectToServer("127.0.0.1", 4600+getuid());
-    connectToServer(argv[1], atoi(argv[2]));
+    connectToServer(ip,5000);
 
     if(isConnected()!= 1)
     {
@@ -46,14 +52,11 @@ int main(int argc, char * argv[])
     }
 
 
-    printw("Connecting with username: %s\n", username);
+    printw("Connecting with username: %s\n", argv[1]);
 
     //code to init the server with details
-    ConnectInit * cI = (ConnectInit *) malloc(sizeof(ConnectInit));
-    //char * name = &cI->userName;
-    strcpy(*cI->userName, username);
     cI->majorVersion = 1;
-    cI->minorVersion = 0;
+    cI->minorVersion = 9;
     sendConnectInit(cI);
     free(cI);
 
@@ -67,7 +70,7 @@ int main(int argc, char * argv[])
     free(ack);
     refresh();
 
-    int sock = getSock();
+    sock = getSock();
 
     fd_set fds;
     FD_ZERO(&fds);
@@ -95,41 +98,14 @@ int main(int argc, char * argv[])
             default:
                 if(FD_ISSET(0,&tfds))
                 {
-                    Chat * ch = (Chat *)malloc(sizeof(Chat));
-                    ch->id = id;
-                    ch->status = 0;
+                    char c = getch();
+                    handle_input(c);
 
-                    //have to manualy add the User: message
-                    //unless it's an update, chat bit = 2
-                    char * tmp = malloc(UNAMELENGTH+MESSAGELENGTH);
-
-                    getstr(tmp);
-                    sprintf(ch->message,"%s: %s",argv[1],tmp);
-                    ch->messageLen = strlen(ch->message);
-                    //printw("STDIN:%s\n",ch->message);
-                    if(!strcmp(tmp, "q"))
-                    {
-                        ch->status = 1;
-                        q = 1;
-                    }
-
-                    if(!sendChat(ch))
-                    {
-                        printw("Error sending chat\n");
-                    }
-                    refresh();
-
-                    free(tmp);
                 }
                 if(FD_ISSET(sock,&tfds))
                 {
                     Chat * ch = (Chat *)malloc(sizeof(Chat));
-                    if(!receiveChat(ch))
-                    {
-                        printw("%s\n",ch->message);
-                        refresh();
-                    }
-                    free(ch);
+                                            
                 }
         }
 
