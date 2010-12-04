@@ -27,7 +27,7 @@ long keysTyped;
 int id;
 Chat ch;
 
-void count() {
+void count(int sig) {
     timeConnected++;
     getStats();
 }
