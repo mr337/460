@@ -67,7 +67,7 @@ int main(int argc, char * argv[])
     cI->majorVersion = 1;
     cI->minorVersion = 9;
     sendConnectInit(cI);
-    free(cI);
+    
 
 
     //wait for ConnectACK for id and such
@@ -112,10 +112,19 @@ int main(int argc, char * argv[])
             default:
                 if(FD_ISSET(0,&tfds))
                 {
+                    Chat * ch = (Chat *)malloc(sizeof(Chat));
                     char c = getch();
-                    handle_input(c);
-                    
-                    
+                    int i = handle_input(c);
+                    ch->id = id;
+                    strcpy(ch->message, *cI->userName);
+                    if(i == 1) {
+                        ch->status = 1;
+                    } else if(i == 2) {
+                        ch->status = 0;
+                        strcat(ch->message, message_buffer);
+                        strcpy(message_buffer, "\0");
+                    }
+                    sendChat(ch);
                 }
                 if(FD_ISSET(sock,&tfds))
                 {
@@ -141,14 +150,15 @@ int main(int argc, char * argv[])
         }
 
     }
+    free(cI);
 
     quit();
 }
 
 void getStats() {
-
-    sprintf(message_buffer, "Time Connected: %ld:%ld\nSent Traffic: %ld\nReceivedTraffic: %ld", timeConnected/60, timeConnected%60, sentTraffic, receivedTraffic);
-
+    char * stats;
+    sprintf(stats, "Time Connected: %ld:%ld\nSent Traffic: %ld\nReceivedTraffic: %ld", timeConnected/60, timeConnected%60, sentTraffic, receivedTraffic);
+    write_to_status_window(stats);
 }
 
 void quit()
