@@ -13,9 +13,11 @@
 
 void quit();
 char ip[15];
-int sock; 
-long send_count;
-long recieve_count;
+int sock;
+long timeConnected;
+long sentTraffic;
+long receivedTraffic;
+long keysTyped;
 
 int main(int argc, char * argv[])
 {
@@ -100,12 +102,16 @@ int main(int argc, char * argv[])
                 {
                     char c = getch();
                     handle_input(c);
-
+                    
+                    
                 }
                 if(FD_ISSET(sock,&tfds))
                 {
                     Chat * ch = (Chat *)malloc(sizeof(Chat));
-                                            
+                    if(!receiveChat()) {
+                        printw("Error");
+                    }
+                    if(ch->status == 
                 }
         }
 
@@ -117,6 +123,12 @@ int main(int argc, char * argv[])
     }
 
     quit();
+}
+
+void getStats() {
+
+    sprintf(message_buffer, "Time Connected: %ld:%ld\nSent Traffic: %ld\nReceivedTraffic: %ld", timeConnected/60, timeConnected%60, sentTraffic, receivedTraffic);
+
 }
 
 void quit()
