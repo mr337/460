@@ -29,6 +29,7 @@ Chat ch;
 
 void count() {
     timeConnected++;
+    getStats();
 }
 
 int main(int argc, char * argv[])
