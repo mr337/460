@@ -10,11 +10,13 @@
 #include <curses.h>
 #include "../networking/networking.h"
 #include "../gui/gui.h"
-#include "
 
 void quit();
 char ip[15];
 int sock; 
+long send_count;
+long recieve_count;
+
 int main(int argc, char * argv[])
 {
 
@@ -99,17 +101,11 @@ int main(int argc, char * argv[])
                     char c = getch();
                     handle_input(c);
 
-
                 }
                 if(FD_ISSET(sock,&tfds))
                 {
                     Chat * ch = (Chat *)malloc(sizeof(Chat));
-                    if(!receiveChat(ch))
-                    {
-                        printw("%s\n",ch->message);
-                        refresh();
-                    }
-                    free(ch);
+                                            
                 }
         }
 
