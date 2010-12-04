@@ -108,10 +108,18 @@ int main(int argc, char * argv[])
                 if(FD_ISSET(sock,&tfds))
                 {
                     Chat * ch = (Chat *)malloc(sizeof(Chat));
-                    if(!receiveChat()) {
+                    if(!receiveChat(ch)) {
                         printw("Error");
                     }
-                    if(ch->status == 
+                    if(ch->status == 0) {
+                        write_to_transcript(ch->message);
+                    }else if(ch->status == 1) {
+                        
+                    }else if(ch->status == 2) {
+                        write_to_user_window(ch->id, ch->message);
+                    }else if(ch->status == 3) {
+                        write_to_user_window(ch->id, ch->message);
+                    }
                 }
         }
 
