@@ -12,10 +12,17 @@
 #include "../gui/gui.h"
 
 void quit();
+int sendReadyChat(char * msg, int status);
+
+
 char ip[15];
 int sock; 
 long send_count;
 long recieve_count;
+int id;
+
+
+Chat ch;
 
 int main(int argc, char * argv[])
 {
@@ -29,6 +36,7 @@ int main(int argc, char * argv[])
     ConnectInit * cI = (ConnectInit *) malloc(sizeof(ConnectInit));
 
     initialize_gui();
+    echo();
     printw("Please enter a username:  ");
     refresh();
     scanw("%s", cI->userName);
@@ -38,21 +46,24 @@ int main(int argc, char * argv[])
     refresh();
     scanw("%s",ip);
 
+    printw("Connecting.....\n");
+    refresh();
+
 
     //connecto to server
     connectToServer(ip,5000);
 
     if(isConnected()!= 1)
     {
-       printw("Error connecting to client\n");
-       refresh();
-       getch();
-       endwin();
-       quit();
+        printw("\nFailed to connect to server.\n");
+        refresh();
+        getch();
+        endwin();
+        quit();
     }
 
 
-    printw("Connecting with username: %s\n", argv[1]);
+    printw("Submitting username: %s\n", argv[1]);
 
     //code to init the server with details
     cI->majorVersion = 1;
@@ -66,7 +77,7 @@ int main(int argc, char * argv[])
     ConnectACK * ack = (ConnectACK*)malloc(sizeof(ConnectACK));
     getACK(ack);
     printw("Recieved ID: %i  Status:%i\n", ack->id, ack->status);
-    int id = ack->id;
+    id = ack->id;
     free(ack);
     refresh();
 
@@ -82,6 +93,8 @@ int main(int argc, char * argv[])
     t.tv_usec = 500000;
 
     int q = 0;
+    noecho();
+    initializeWindows();
 
     for(;;)
     {
@@ -104,7 +117,7 @@ int main(int argc, char * argv[])
                 }
                 if(FD_ISSET(sock,&tfds))
                 {
-                    Chat * ch = (Chat *)malloc(sizeof(Chat));
+                    //Chat * ch = (Chat *)malloc(sizeof(Chat));
                                             
                 }
         }
@@ -117,6 +130,15 @@ int main(int argc, char * argv[])
     }
 
     quit();
+}
+
+int sendReadyChat(char * msg, int status)
+{//0 means nothing got sent
+    ch.id=id;
+    ch.status=status;
+    strncpy(ch.message,msg,UNAMELENGTH+MESSAGELENGTH);
+
+    return sendChat(&ch);
 }
 
 void quit()
