@@ -13,9 +13,11 @@
 
 void quit();
 char ip[15];
-int sock; 
-long send_count;
-long recieve_count;
+int sock;
+long timeConnected;
+long sentTraffic;
+long receivedTraffic;
+long keysTyped;
 
 int main(int argc, char * argv[])
 {
@@ -100,6 +102,7 @@ int main(int argc, char * argv[])
                 {
                     char c = getch();
                     handle_input(c);
+                    
 
                 }
                 if(FD_ISSET(sock,&tfds))
@@ -117,6 +120,19 @@ int main(int argc, char * argv[])
     }
 
     quit();
+}
+
+void getStats() {
+    sprintf(message_buffer, "Time Connected: %s\nSent Traffic: %s\nReceivedTraffic: %s", timeConnected, sentTraffic, receivedTraffic, keysTyped);
+
+    /*strcpy();
+    srcpy(message_buffer, (char *)timeConnected);
+    strcat(message_buffer, "\n");
+    strcat(message_buffer, (char *)sentTraffic);
+    strcat(message_buffer, "\n");
+    strcat(message_buffer, (char *)receivedTraffic);
+    strcat(message_buffer, "\n");
+    strcat(message_buffer, (char *)keysTyped);*/
 }
 
 void quit()
