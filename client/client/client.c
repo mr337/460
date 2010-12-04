@@ -1,5 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <signal.h>
+#include <errno.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/times.h>
@@ -18,6 +21,10 @@ long timeConnected;
 long sentTraffic;
 long receivedTraffic;
 long keysTyped;
+
+void count() {
+    timeConnected++;
+}
 
 int main(int argc, char * argv[])
 {
@@ -87,6 +94,11 @@ int main(int argc, char * argv[])
 
     for(;;)
     {
+        signal(SIGALRM, count);
+
+        errno = 0;
+        alarm(1);
+
         fd_set tfds = fds;
         struct timeval ttmp;
         ttmp.tv_sec = 0;
@@ -112,13 +124,13 @@ int main(int argc, char * argv[])
                         printw("Error");
                     }
                     if(ch->status == 0) {
-                        write_to_transcript(ch->message);
+                        write_to_transcript(ch->message, 0);
                     }else if(ch->status == 1) {
                         
                     }else if(ch->status == 2) {
                         write_to_user_window(ch->id, ch->message);
                     }else if(ch->status == 3) {
-                        write_to_user_window(ch->id, ch->message);
+                        write_to_transcript(ch->message, 0);
                     }
                 }
         }
