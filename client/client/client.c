@@ -106,10 +106,10 @@ int main(int argc, char * argv[])
 
     for(;;)
     {
-        signal(SIGALRM, count);
+        catch_signal(SIGALRM, count);
 
         errno = 0;
-        alarm(1);
+        ualarm(1000, 1000);
 
         fd_set tfds = fds;
         struct timeval ttmp;
@@ -135,6 +135,9 @@ int main(int argc, char * argv[])
                         ch->status = 0;
                         strcat(ch->message, message_buffer);
                         strcpy(message_buffer, "\0");
+                    } else {
+                        ch->status = 2;
+                        strcpy(ch->message, c);
                     }
                     sendChat(ch);
                 }
