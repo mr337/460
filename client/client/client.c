@@ -103,12 +103,15 @@ int main(int argc, char * argv[])
                     char c = getch();
                     handle_input(c);
                     
-
+                    
                 }
                 if(FD_ISSET(sock,&tfds))
                 {
                     Chat * ch = (Chat *)malloc(sizeof(Chat));
-                                            
+                    if(!receiveChat()) {
+                        printw("Error");
+                    }
+                    if(ch->status == 
                 }
         }
 
@@ -123,16 +126,9 @@ int main(int argc, char * argv[])
 }
 
 void getStats() {
-    sprintf(message_buffer, "Time Connected: %s\nSent Traffic: %s\nReceivedTraffic: %s", timeConnected, sentTraffic, receivedTraffic, keysTyped);
 
-    /*strcpy();
-    srcpy(message_buffer, (char *)timeConnected);
-    strcat(message_buffer, "\n");
-    strcat(message_buffer, (char *)sentTraffic);
-    strcat(message_buffer, "\n");
-    strcat(message_buffer, (char *)receivedTraffic);
-    strcat(message_buffer, "\n");
-    strcat(message_buffer, (char *)keysTyped);*/
+    sprintf(message_buffer, "Time Connected: %ld:%ld\nSent Traffic: %ld\nReceivedTraffic: %ld", timeConnected/60, timeConnected%60, sentTraffic, receivedTraffic);
+
 }
 
 void quit()
