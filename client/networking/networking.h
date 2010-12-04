@@ -69,7 +69,7 @@ int getSock();
 //status bits: 0 - nothing unusual, global broadcast
 //status bits: 1 - user disconnecting...
 //status bits: 2 - this is a keyboard update
-//status bits: 3 - this is the gaudy mode
-//status bits: 4 - this is lurk message
+//status bits: 3 - gaudy
+//status bits: 4 - deep-six
 
 #endif
