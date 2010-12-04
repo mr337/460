@@ -11,7 +11,6 @@ CHAT_WINDOW p_win;
 CHAT_WINDOW s_win;
 CHAT_WINDOW e_win;
 CHAT_WINDOW u_wins[10];
-char message_buffer[MESSAGELENGTH];
 int message_index = 0;
 
 void write_line(char *message, int window_width, WINDOW *win)
@@ -51,13 +50,28 @@ void write_to_window(char *message, int window_width, WINDOW *win)
     {
        for (i = 0 ; i < blank_space - 1; i++ ) {
            wprintw(win, " ");
-       }       
+       }              
           scrollok(win, 0); //Turn off scrolling to pad out the line
           wprintw(win, " ");
     }
     scrollok(win, s);
 }
 
+void write_to_windowh(char *message, int window_width, WINDOW *win)
+{
+    int blank_space = window_width - strlen(message);
+    int i;
+    int s = is_scrollok(win);
+
+    wprintw(win, message);
+    
+    for (i = 0 ; i < blank_space - 1; i++ ) {
+        wprintw(win, " ");
+    }              
+    scrollok(win, 0); //Turn off scrolling to pad out the line
+    wprintw(win, " ");
+    scrollok(win, s);
+}
 
 void write_to_windowf(char *message, int window_width, WINDOW *win, ...)
 {  
@@ -157,6 +171,51 @@ void initialize_windows()
     wmove(e_win.window, 0, 0);    
 }
 
+void write_to_program_window(char *message)
+{
+   int i;
+   int len = strlen(message);
+   int line = 0;
+   scrollok(p_win.window, 0);
+   wmove(p_win.window, 0, 0);
+   for ( i = 0; i < len; i++ )
+   {
+       if ( message[i] == '\n' )
+       {
+          line++;
+          wmove(p_win.window, line, 0);
+       }
+       else
+       {
+          waddch(p_win.window, message[i]);
+       }
+   }           
+   wrefresh(p_win.window);
+}
+
+void write_to_status_window(char *message)
+{
+   int i;
+   int len = strlen(message);
+   int line = 0;
+   scrollok(s_win.window, 0);
+   wmove(s_win.window, 0, 0);
+   for ( i = 0; i < len; i++ )
+   {
+       if ( message[i] == '\n' )
+       {
+          line++;
+          wmove(s_win.window, line, 0);
+       }
+       else
+       {
+          waddch(s_win.window, message[i]);
+       }
+   }           
+   wrefresh(s_win.window);
+}
+
+
 int handle_input(char input)
 {
     if (iscntrl(input))
@@ -164,17 +223,17 @@ int handle_input(char input)
           if ( input == CTRL_Q )
           {
               return 1;
-          } else if ( input == 0xA ) {
+          } else if ( input == ENTER ) {
               int count, i;
               werase(e_win.window);
-              /*while (scrollDown()) {
+              while (scrollDown()) {
                   scroll_transcript_down();
               } 
               count = updateTranscript(message_buffer);
               for ( i = 0; i < count; i++ ) {
                   write_to_transcript(messages[i]);
-              }*/
-              write_to_user_window(3, "Test");            
+              }
+   //           write_to_user_window(3, "Test");            
               message_buffer[0] = '\0';
               message_index = 0;        
           } else if ( input == CTRL_L ) {
@@ -205,11 +264,11 @@ int handle_input(char input)
                      wmove(e_win.window, 0, 0);
                      if ( message_index >= e_win.w ) {
                          newx = e_win.w - 1;
-                         write_to_window(message_buffer + (message_index - e_win.w) +1,
+                         write_to_windowh(message_buffer + (message_index - e_win.w) +1,
                                  e_win.w, e_win.window);
                      } else {
                          newx = message_index;
-                         write_to_window(message_buffer,
+                         write_to_windowh(message_buffer,
                                  e_win.w, e_win.window);
                      }
                      wmove(e_win.window, 0, newx);
@@ -227,7 +286,7 @@ int handle_input(char input)
             } else {
                 scrollok(e_win.window, 1);
                 wmove(e_win.window, e_win.y, 0);
-                write_to_window(message_buffer + (message_index - e_win.w),
+                write_to_windowh(message_buffer + (message_index - e_win.w),
                         e_win.w, e_win.window);
                 scrollok(e_win.window, 0);
             }
@@ -240,12 +299,15 @@ int handle_input(char input)
 void draw_main_interface()
 {
     initialize_windows();
-    while ( 1 )
+    write_to_program_window("This is\nA Test\nand junk");
+    write_to_status_window("This is\nThe Status Window\nYay");
+    getch();
+    /*while ( 1 )
     {
         char input = wgetch(e_win.window);    
         if (handle_input(input))
             break;
-    }
+    }*/
 }
 
 void scroll_transcript_down()

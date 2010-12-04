@@ -21,6 +21,7 @@ typedef struct
 #define CTRL_W 0x17
 #define CTRL_Y 0x19
 #define BACKSPACE 127 
+#define ENTER 0xA
 
 void write_to_window(char *message, int window_width, WINDOW *win);
 void write_line(char *message, int window_width, WINDOW *win);
@@ -36,5 +37,9 @@ void scroll_transcript_down();
 int handle_input(char input);
 
 void write_to_user_window(int user_id, char * message);
+void write_to_program_window(char * message);
+void write_to_status_window(char * message);
+
+char message_buffer[MESSAGELENGTH];
 
 #endif
