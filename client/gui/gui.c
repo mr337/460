@@ -12,19 +12,6 @@ CHAT_WINDOW e_win;
 CHAT_WINDOW u_wins[10];
 
 
-void write_to_window(char *message, int window_width, WINDOW *win)
-{
-    int blank_space = window_width - strlen(message);
-    int i;
-    wprintw(win, message);
-    for (i = 0 ; i < blank_space - 1; i++ ) {
-        wprintw(win, " ");
-    }
-    scrollok(win, 0); //Turn off scrolling to pad out the line
-    wprintw(win, " ");
-    scrollok(win, 1);
-}
-
 void write_line(char *message, int window_width, WINDOW *win)
 {
     wprintw(win, " ");
@@ -39,6 +26,25 @@ void write_to_transcript(char *message)
     wmove(e_win.window, 0,0);
     scrollok(e_win.window, 0);
 }
+
+void write_to_user_window(int user_id, char * message)
+{
+    write_to_window(message, u_wins[user_id].w, u_wins[user_id].window);
+}
+
+void write_to_window(char *message, int window_width, WINDOW *win)
+{
+    int blank_space = window_width - strlen(message);
+    int i;
+    wprintw(win, message);
+    for (i = 0 ; i < blank_space - 1; i++ ) {
+        wprintw(win, " ");
+    }
+    scrollok(win, 0); //Turn off scrolling to pad out the line
+    wprintw(win, " ");
+    scrollok(win, 1);
+}
+
 
 void write_to_windowf(char *message, int window_width, WINDOW *win, ...)
 {  
@@ -67,7 +73,7 @@ void initialize_colors()
     init_pair(2, COLOR_GREEN, COLOR_BLUE);
     init_pair(3, COLOR_BLUE, COLOR_CYAN);
     init_pair(4, COLOR_BLACK, COLOR_YELLOW);
-    init_pair(5, COLOR_BLACK, COLOR_WHITE);
+   init_pair(5, COLOR_BLACK, COLOR_WHITE);
 }
 
 void initialize_windows()
@@ -153,29 +159,31 @@ void draw_main_interface()
           {
               break;
           } else if ( input == 0xA ) {
+              int count, i;
               werase(e_win.window);
-              write_to_transcript(message_buffer);
-              updateTranscript(message_buffer);
+              while (scrollDown()) {
+                  scroll_transcript_down();
+              } 
+              count = updateTranscript(message_buffer);
+              for ( i = 0; i < count; i++ ) {
+                  write_to_transcript(messages[i]);
+              }
               message_buffer[0] = '\0';
               message_index = 0;        
           } else if ( input == CTRL_L ) {
               write_to_transcript("Lurk!");
           } else if ( input == CTRL_P ) {
-              wscrl(t_win.window, -1);
               if ( scrollUp() == 1) {
+                wscrl(t_win.window, -1);
                 char *line = getTop();
                 wmove(t_win.window, 0, 0);
                 write_to_window(line, t_win.w, t_win.window);                
-              }
                 wrefresh(t_win.window);
+              }
           } else if ( input == CTRL_N ) {
               if ( scrollDown() == 1) {                  
-                  wscrl(t_win.window, 1);          
-                  char *line = getBottom();
-                  wmove(t_win.window, 79, 0);
-                  write_to_window(line, t_win.w, t_win.window);
-                  wrefresh(t_win.window);
-              }
+                  scroll_transcript_down();
+              }     
           } else if ( input == BACKSPACE ) {
               if (message_index > 0) {
                   message_buffer[message_index] = '\0';
@@ -194,6 +202,15 @@ void draw_main_interface()
             waddch(e_win.window, input);
         }
     }
+}
+
+void scroll_transcript_down()
+{
+  wscrl(t_win.window, 1);          
+  char *line = getBottom();
+  wmove(t_win.window, 22, 0);
+  write_to_window(line, t_win.w, t_win.window);
+  wrefresh(t_win.window);
 }
 
 void initialize_gui()

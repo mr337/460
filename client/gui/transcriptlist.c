@@ -97,15 +97,17 @@ int getLength()
     return length;
 }
 
-char * updateTranscript(char *message)
+int updateTranscript(char *message)
 {
     int i;
     int lastSpace = 0;
     int lastBreak = 0;
     int msg_len = strlen(message);
-    char line[81];
+    char *line = messages[0];
+    int message_count = 0;
 
     line[0] = '\0';
+    message_count = 0;
 
     for ( i = 0; i <= msg_len; i++ ) {
         if ( msg_len > 0 ) {
@@ -113,27 +115,29 @@ char * updateTranscript(char *message)
               lastSpace = i;
             }
 
-            line[i] = message[lastBreak  + i];
+            line[i - lastBreak] = message[i];
         }
 
         if ( i == msg_len  ) {
             line[i+1] = '\0';
             addNode(line);
+            message_count++;
+            line = messages[message_count];
         }
-        else if ( (i - lastBreak) == 79 ) {
+        else if ( (i - lastBreak) == 39 ) {
             if (lastSpace > lastBreak) {
                 line[lastSpace - lastBreak] = '\0';
-                lastBreak = lastSpace;
+                lastBreak = lastSpace + 1;
                 i = lastSpace;
             } else {
-                line[80] = '\0';
-                lastBreak += 79;
-                lastSpace += 79;
+                line[40] = '\0';
+                lastBreak += 39;
+                lastSpace += 39;
             }
             addNode(line);
-        }        
+            message_count++;
+            line = messages[message_count];
+        }       
     }
-
+    return message_count;
 }
-
-

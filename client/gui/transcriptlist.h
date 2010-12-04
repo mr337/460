@@ -13,6 +13,7 @@ struct tnode
 struct tnode * transhead;
 struct tnode * top;
 struct tnode * bottom;
+char messages[5][81];
 
 void linkedListInit();
 void addNode(char * msg);
@@ -22,6 +23,6 @@ int scrollUp();
 int scrollDown();
 int isNull();
 int getLength();
-char * updateTranscript(char * message);
+int updateTranscript(char * message);
 
 #endif

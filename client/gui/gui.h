@@ -32,5 +32,8 @@ void initialize_windows();
 void draw_main_interface();
 void initialize_gui();
 void cleanup_gui();
+void scroll_transcript_down();
+
+void write_to_user_window(int user_id, char * message);
 
 #endif
