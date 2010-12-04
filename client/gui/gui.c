@@ -5,6 +5,7 @@
 #include <ncurses.h>
 #include <string.h>
 #include <stdarg.h>
+#include <ctype.h>
 
 CHAT_WINDOW t_win;
 CHAT_WINDOW p_win;
