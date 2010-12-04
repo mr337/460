@@ -1,6 +1,7 @@
 #include "gui.h"
 #include "../../server/linkedlist.h"
 #include "transcriptlist.h"
+#include "../networking/networking.h"
 #include <ncurses.h>
 #include <string.h>
 #include <stdarg.h>
@@ -10,7 +11,8 @@ CHAT_WINDOW p_win;
 CHAT_WINDOW s_win;
 CHAT_WINDOW e_win;
 CHAT_WINDOW u_wins[10];
-
+char message_buffer[MESSAGELENGTH];
+int message_index = 0;
 
 void write_line(char *message, int window_width, WINDOW *win)
 {
@@ -29,20 +31,31 @@ void write_to_transcript(char *message)
 
 void write_to_user_window(int user_id, char * message)
 {
-    write_to_window(message, u_wins[user_id].w, u_wins[user_id].window);
+    //write_to_window(" ", u_wins[user_id].w, u_wins[user_id].window);
+    //write_to_window(message, u_wins[user_id].w, u_wins[user_id].window);
+    write_line(message, u_wins[user_id].w, u_wins[user_id].window);
+    wrefresh(u_wins[user_id].window);
 }
 
 void write_to_window(char *message, int window_width, WINDOW *win)
 {
     int blank_space = window_width - strlen(message);
     int i;
+    int s = is_scrollok(win);
+
+    if ( blank_space <= 0 )
+        scrollok(win, 0);
+
     wprintw(win, message);
-    for (i = 0 ; i < blank_space - 1; i++ ) {
-        wprintw(win, " ");
+    if ( blank_space > 0 )
+    {
+       for (i = 0 ; i < blank_space - 1; i++ ) {
+           wprintw(win, " ");
+       }       
+          scrollok(win, 0); //Turn off scrolling to pad out the line
+          wprintw(win, " ");
     }
-    scrollok(win, 0); //Turn off scrolling to pad out the line
-    wprintw(win, " ");
-    scrollok(win, 1);
+    scrollok(win, s);
 }
 
 
@@ -144,30 +157,24 @@ void initialize_windows()
     wmove(e_win.window, 0, 0);    
 }
 
-
-void draw_main_interface()
+int handle_input(char input)
 {
-    char message_buffer[100];
-    int message_index = 0;
-    initialize_windows();
-    while ( 1 )
+    if (iscntrl(input))
     {
-        char input = wgetch(e_win.window);    
-        if (iscntrl(input))
-        {
           if ( input == CTRL_Q )
           {
-              break;
+              return 1;
           } else if ( input == 0xA ) {
               int count, i;
               werase(e_win.window);
-              while (scrollDown()) {
+              /*while (scrollDown()) {
                   scroll_transcript_down();
               } 
               count = updateTranscript(message_buffer);
               for ( i = 0; i < count; i++ ) {
                   write_to_transcript(messages[i]);
-              }
+              }*/
+              write_to_user_window(3, "Test");            
               message_buffer[0] = '\0';
               message_index = 0;        
           } else if ( input == CTRL_L ) {
@@ -186,12 +193,28 @@ void draw_main_interface()
               }     
           } else if ( input == BACKSPACE ) {
               if (message_index > 0) {
-                  message_buffer[message_index] = '\0';
                   message_index--;
+                  message_buffer[message_index] = '\0';
                   int x = getcurx(e_win.window);
-                  wmove(e_win.window, getcury(e_win.window), x - 1);
-                  waddch(e_win.window, ' ');
-                  wmove(e_win.window, getcury(e_win.window), x - 1);
+                  if ( x > 1 ) {
+                    wmove(e_win.window, getcury(e_win.window), x - 1);
+                    waddch(e_win.window, ' ');
+                    wmove(e_win.window, getcury(e_win.window), x - 1);
+                  } else {
+                     int newx;
+                     wmove(e_win.window, 0, 0);
+                     if ( message_index >= e_win.w ) {
+                         newx = e_win.w - 1;
+                         write_to_window(message_buffer + (message_index - e_win.w) +1,
+                                 e_win.w, e_win.window);
+                     } else {
+                         newx = message_index;
+                         write_to_window(message_buffer,
+                                 e_win.w, e_win.window);
+                     }
+                     wmove(e_win.window, 0, newx);
+                     wrefresh(e_win.window);
+                  }
               }
           }
         }
@@ -199,8 +222,29 @@ void draw_main_interface()
         {
             message_buffer[message_index++] = input;
             message_buffer[message_index] = '\0';            
-            waddch(e_win.window, input);
+            if ( message_index < 80 || getcurx(e_win.window) < e_win.w - 1 ) {
+                waddch(e_win.window, input);
+            } else {
+                scrollok(e_win.window, 1);
+                wmove(e_win.window, e_win.y, 0);
+                write_to_window(message_buffer + (message_index - e_win.w),
+                        e_win.w, e_win.window);
+                scrollok(e_win.window, 0);
+            }
+
         }
+    
+    return 0;
+}
+
+void draw_main_interface()
+{
+    initialize_windows();
+    while ( 1 )
+    {
+        char input = wgetch(e_win.window);    
+        if (handle_input(input))
+            break;
     }
 }
 

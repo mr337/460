@@ -118,11 +118,13 @@ int updateTranscript(char *message)
             line[i - lastBreak] = message[i];
         }
 
-        if ( i == msg_len  ) {
+        if ( i == msg_len - 1  ) {
             line[i+1] = '\0';
             addNode(line);
             message_count++;
             line = messages[message_count];
+            lastBreak = i;
+            lastSpace = i;
         }
         else if ( (i - lastBreak) == 39 ) {
             if (lastSpace > lastBreak) {
@@ -131,11 +133,12 @@ int updateTranscript(char *message)
                 i = lastSpace;
             } else {
                 line[40] = '\0';
-                lastBreak += 39;
-                lastSpace += 39;
+                lastBreak = i + 1;
+                lastSpace = i;
             }
             addNode(line);
             message_count++;
+            printf("%s", line);
             line = messages[message_count];
         }       
     }
