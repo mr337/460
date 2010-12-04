@@ -16,12 +16,14 @@ int message_index = 0;
 
 void write_line(char *message, int window_width, WINDOW *win)
 {
-    wprintw(win, " ");
+    //wprintw(win, " ");
+    wscrl(win, 1);
+    wmove(win, getcury(win), 0);
     write_to_window(message, window_width, win);
     wrefresh(win);
 }
 
-void write_to_transcript(char *message)
+void write_to_transcript(char *message, int check_for_gaudy)
 {
     write_line(message, t_win.w, t_win.window);
     write_line(" ", e_win.w, e_win.window);
@@ -36,6 +38,7 @@ void write_to_user_window(int user_id, char * message)
     int lastSpace = 0;
     int len = strlen(message);
     int lineCount = 0;
+    int gaudy_found = 0;
     char line[(MESSAGELENGTH / u_wins[user_id].w) + 1][u_wins[user_id].w];
     
     for ( i = 0; i < len; i++ )
@@ -44,6 +47,10 @@ void write_to_user_window(int user_id, char * message)
             if ( message[i] == ' ' ) {
                 lastSpace = i;
             }
+        }
+
+        if ( message[i] == STX ) {
+            gaudy_found = 1;
         }
 
         line[lineCount][i - lastBreak] = message[i];
@@ -67,20 +74,40 @@ void write_to_user_window(int user_id, char * message)
         }
     }
 
+    j = 0;
     scrollok(u_wins[user_id].window, 0);
 
-    if ( lineCount > 3 ) {
-        i = lineCount - 3;
-    } else {
-        i = 0;
-    }
+    if ( gaudy_found == 0 ) {
+      if ( lineCount > 3 ) {
+          i = lineCount - 3;
+      } else {
+          i = 0;
+      }
 
-    j = 0;
 
-    for ( ; i < lineCount; i++ ) {
+      for ( ; i < lineCount; i++ ) {     
         wmove(u_wins[user_id].window, j, 0);
         wprintw(u_wins[user_id].window, line[i]);
         j++;
+      }
+    } else {
+      int k;
+      for ( i = 0; i < lineCount; i++ ) { 
+        if ( i >= lineCount - 3) {
+          wmove(u_wins[user_id].window, j, 0);
+          j++;
+        }
+        for ( k = 0; k < u_wins[user_id].w; k++ ) {
+          if ( line[i][k] == STX ) {
+             attron(A_BOLD);
+          } else if ( line[i][k] == ETX) {
+             attroff(A_BOLD);
+          } else if ( i >= lineCount - 3) {        
+             waddch(u_wins[user_id].window, line[i][k]);
+          }
+          wrefresh(u_wins[user_id].window);
+        }        
+      }
     }
 
     wrefresh(u_wins[user_id].window);
@@ -281,13 +308,13 @@ int handle_input(char input)
               } 
               count = updateTranscript(message_buffer);
               for ( i = 0; i < count; i++ ) {
-                  write_to_transcript(messages[i]);
+                  write_to_transcript(messages[i], 0);
               }
    //           write_to_user_window(3, "Test");            
               message_buffer[0] = '\0';
               message_index = 0;        
           } else if ( input == CTRL_L ) {
-              write_to_transcript("Lurk!");
+              write_to_transcript("Lurk!", 0);
           } else if ( input == CTRL_P ) {
               if ( scrollUp() == 1) {
                 wscrl(t_win.window, -1);
@@ -327,20 +354,24 @@ int handle_input(char input)
               }
           }
         }
-        else
+        else if (message_index < MESSAGELENGTH)        
         {
-            message_buffer[message_index++] = input;
-            message_buffer[message_index] = '\0';            
-            if ( message_index < 80 || getcurx(e_win.window) < e_win.w - 1 ) {
-                waddch(e_win.window, input);
+            if ( message_index == MESSAGELENGTH - 1 )
+            {
+                message_buffer[message_index++] = '\0';
             } else {
-                scrollok(e_win.window, 1);
-                wmove(e_win.window, e_win.y, 0);
-                write_to_windowh(message_buffer + (message_index - e_win.w),
-                        e_win.w, e_win.window);
-                scrollok(e_win.window, 0);
+              message_buffer[message_index++] = input;
+              message_buffer[message_index] = '\0';            
+              if ( message_index < 80 || getcurx(e_win.window) < e_win.w - 1 ) {
+                  waddch(e_win.window, input);
+              } else {
+                  scrollok(e_win.window, 1);
+                  wmove(e_win.window, e_win.y, 0);
+                  write_to_windowh(message_buffer + (message_index - e_win.w),
+                          e_win.w, e_win.window);
+                  scrollok(e_win.window, 0);
+              }
             }
-
         }
     
     return 0;
@@ -351,7 +382,7 @@ void draw_main_interface()
     initialize_windows();
     write_to_program_window("This is\nA Test\nand junk");
     write_to_status_window("This is\nThe Status Window\nYay");
-    write_to_user_window(0, "This is a test of writing to the user window and i hope this works");
+    write_to_user_window(0, "This is a test \x02 of writing to the user \x03 window and i hope this works");
     while ( 1 )
     {
         char input = wgetch(e_win.window);    
