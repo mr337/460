@@ -138,7 +138,6 @@ int updateTranscript(char *message)
             }
             addNode(line);
             message_count++;
-            printf("%s", line);
             line = messages[message_count];
         }       
     }

@@ -13,6 +13,7 @@ CHAT_WINDOW s_win;
 CHAT_WINDOW e_win;
 CHAT_WINDOW u_wins[10];
 int message_index = 0;
+int gaudy_on = 0;
 
 void write_line(char *message, int window_width, WINDOW *win)
 {
@@ -25,10 +26,32 @@ void write_line(char *message, int window_width, WINDOW *win)
 
 void write_to_transcript(char *message, int check_for_gaudy)
 {
-    write_line(message, t_win.w, t_win.window);
-    write_line(" ", e_win.w, e_win.window);
-    wmove(e_win.window, 0,0);
-    scrollok(e_win.window, 0);
+    int count,i;
+    while (scrollDown()) {
+        scroll_transcript_down();
+    } 
+    count = updateTranscript(message_buffer);
+    for ( i = 0; i < count; i++ ) {
+        if ( check_for_gaudy == 0 ) {
+           write_line(messages[i], t_win.w, t_win.window);
+        } else {
+           int j;
+           int len = strlen(messages[i]);
+           wscrl(t_win.window, 1);
+           wmove(t_win.window, getcury(t_win.window), 0);
+           for ( j = 0; j < len; j++ ) {
+               char input = messages[i][j];
+               if ( input == STX ) {
+                   wattron(t_win.window, A_REVERSE);
+               } else if (input == ETX) {
+                   wattroff(t_win.window, A_REVERSE);
+               } else {
+                   waddch(t_win.window, input);
+               }
+            }        
+        }
+    }
+    wrefresh(t_win.window);
 }
 
 void write_to_user_window(int user_id, char * message)
@@ -84,7 +107,6 @@ void write_to_user_window(int user_id, char * message)
           i = 0;
       }
 
-
       for ( ; i < lineCount; i++ ) {     
         wmove(u_wins[user_id].window, j, 0);
         wprintw(u_wins[user_id].window, line[i]);
@@ -99,9 +121,11 @@ void write_to_user_window(int user_id, char * message)
         }
         for ( k = 0; k < u_wins[user_id].w; k++ ) {
           if ( line[i][k] == STX ) {
-             attron(A_BOLD);
+             wattron(u_wins[user_id].window, A_REVERSE);
           } else if ( line[i][k] == ETX) {
-             attroff(A_BOLD);
+             wattroff(u_wins[user_id].window, A_REVERSE);
+          } else if ( line[i][k] == '\0' ) {
+              break;
           } else if ( i >= lineCount - 3) {        
              waddch(u_wins[user_id].window, line[i][k]);
           }
@@ -153,7 +177,6 @@ void write_to_windowh(char *message, int window_width, WINDOW *win)
 void write_to_windowf(char *message, int window_width, WINDOW *win, ...)
 {  
     char final_message[50];
-    int blank_space;
     va_list list;
     va_start( list, win );
     vsprintf(final_message, message, list);
@@ -292,26 +315,24 @@ void write_to_status_window(char *message)
    wrefresh(s_win.window);
 }
 
-
 int handle_input(char input)
 {
     if (iscntrl(input))
     {
           if ( input == CTRL_Q )
           {
-              return 1;
+              return CHAT_QUIT;
           } else if ( input == ENTER ) {
               int count, i;
               werase(e_win.window);
-              while (scrollDown()) {
-                  scroll_transcript_down();
-              } 
-              count = updateTranscript(message_buffer);
-              for ( i = 0; i < count; i++ ) {
-                  write_to_transcript(messages[i], 0);
-              }
-   //           write_to_user_window(3, "Test");            
-              message_buffer[0] = '\0';
+        write_line(" ", e_win.w, e_win.window);
+        wmove(e_win.window, 0,0);
+        scrollok(e_win.window, 0);
+
+              return CHAT_UPDATE;
+       //       write_to_transcript(message_buffer, 1);
+                 //           write_to_user_window(3, "Test");            
+        //      message_buffer[0] = '\0';
               message_index = 0;        
           } else if ( input == CTRL_L ) {
               write_to_transcript("Lurk!", 0);
@@ -326,7 +347,7 @@ int handle_input(char input)
           } else if ( input == CTRL_N ) {
               if ( scrollDown() == 1) {                  
                   scroll_transcript_down();
-              }     
+              }  
           } else if ( input == BACKSPACE ) {
               if (message_index > 0) {
                   message_index--;
@@ -351,9 +372,18 @@ int handle_input(char input)
                      wmove(e_win.window, 0, newx);
                      wrefresh(e_win.window);
                   }
-              }
+              }               
+          } else if ( input == CTRL_G ) {        
+              if ( gaudy_on == 0 ) { 
+                  message_buffer[message_index++] = STX;
+                  gaudy_on = 1;
+              } else {
+                  message_buffer[message_index++] = ETX;
+                  gaudy_on = 0;
+              }        
           }
         }
+
         else if (message_index < MESSAGELENGTH)        
         {
             if ( message_index == MESSAGELENGTH - 1 )
@@ -374,7 +404,7 @@ int handle_input(char input)
             }
         }
     
-    return 0;
+    return CHAT_BROADCAST;
 }
 
 void draw_main_interface()
@@ -382,11 +412,11 @@ void draw_main_interface()
     initialize_windows();
     write_to_program_window("This is\nA Test\nand junk");
     write_to_status_window("This is\nThe Status Window\nYay");
-    write_to_user_window(0, "This is a test \x02 of writing to the user \x03 window and i hope this works");
+    write_to_user_window(0, "This is a test \x02of writing to the user window and\x03 i hope this works");
     while ( 1 )
     {
         char input = wgetch(e_win.window);    
-        if (handle_input(input))
+        if (handle_input(input) == CHAT_QUIT)
             break;
     }
 }

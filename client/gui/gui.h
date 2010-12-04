@@ -9,6 +9,10 @@ typedef struct
     int w, h, x, y;
 } CHAT_WINDOW;
 
+#define CHAT_UPDATE 0
+#define CHAT_QUIT 1
+#define CHAT_BROADCAST 2
+
 #define CTRL_6 0x1E
 #define CTRL_RB 0x1D
 #define CTRL_G 0x07
