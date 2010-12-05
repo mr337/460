@@ -9,22 +9,21 @@
 #include <unistd.h>
 #include <curses.h>
 #include "../networking.h"
-#include "../../gui/gui.h"
 
 void quit();
 
 int main(int argc, char * argv[])
 {
 
-    /*if(argc != 4)
+    if(argc != 4)
     {
         printf("Must be in format program Username Server Port\n");
         exit(EXIT_SUCCESS);
-        }*/
-    initialize_gui();
-    printw("Please enter a username:  ");
-    char * username;
-    scanw("%s", username);
+    }
+    initscr();
+    noecho();
+    cbreak();
+    refresh();
 
     //connecto to server
     connectToServer(argv[2],atoi(argv[3]));
@@ -70,7 +69,7 @@ int main(int argc, char * argv[])
     struct timeval t;
     t.tv_sec = 0;
     t.tv_usec = 500000;
-
+    
     int q = 0;
 
     for(;;)
@@ -88,9 +87,6 @@ int main(int argc, char * argv[])
             default:
                 if(FD_ISSET(0,&tfds))
                 {
-                    char c = getch();
-                    handle_input(c);
-
                     Chat * ch = (Chat *)malloc(sizeof(Chat));
                     ch->id = id;
                     ch->status = 0;
@@ -99,15 +95,15 @@ int main(int argc, char * argv[])
                     //unless it's an update, chat bit = 2
                     char * tmp = malloc(UNAMELENGTH+MESSAGELENGTH);
 
-                    //getstr(tmp);
-                    //sprintf(ch->message,"%s: %s",argv[1],tmp);
-                    //ch->messageLen = strlen(ch->message);
+                    getstr(tmp);
+                    sprintf(ch->message,"%s: %s",argv[1],tmp);
+                    ch->messageLen = strlen(ch->message);
                     //printw("STDIN:%s\n",ch->message);
-                    /*if(!strcmp(tmp, "q"))
+                    if(!strcmp(tmp, "q"))
                     {
                         ch->status = 1;
                         q = 1;
-                        }*/
+                    }
 
                     if(!sendChat(ch))
                     {

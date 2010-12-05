@@ -69,8 +69,6 @@ int main(int argc, char * argv[])
     sendConnectInit(cI);
     
     //wait for ConnectACK for id and such
-    //sleep(1);
-
     ConnectACK * ack = (ConnectACK*)malloc(sizeof(ConnectACK));
     getACK(ack);
     printw("Recieved ID: %i  Status:%i\n", ack->id, ack->status);
@@ -107,7 +105,7 @@ int main(int argc, char * argv[])
         ttmp.tv_sec = 0;
         ttmp.tv_usec = t.tv_usec;
 
-        switch(select(sock+1,&tfds,NULL,NULL,NULL))
+        switch(select(sock+1,&tfds,NULL,NULL,&ttmp))
         {
             case -1:
                 printw("Something wrong\n");
@@ -115,12 +113,10 @@ int main(int argc, char * argv[])
             default:
                 if(FD_ISSET(0,&tfds))
                 {
-                    //char c = getch();
-                    //int i = handle_input(c);
-                    //ch->id = id;
-                    //strcpy(ch->message, *cI->userName);
-
                     ch.id = id;
+                    printw("Something on STDIN\n");
+                    printf("Something on STDIN\n");
+                    refresh();
 
                     switch(handle_input(getch()))
                     {
@@ -136,7 +132,7 @@ int main(int argc, char * argv[])
                             break;
                         case CHAT_BROADCAST:
                             ch.status=3;
-                            snprintf(ch.message,UNAMELENGTH+MESSAGELENGTH,"%s: %s",message_buffer,*cI->userName);
+                            snprintf(ch.message,UNAMELENGTH+MESSAGELENGTH,"%s: %s",message_buffer,cI->userName);
                             sendChat(&ch);
                             break;
                         default:
@@ -146,24 +142,28 @@ int main(int argc, char * argv[])
                 }
                 if(FD_ISSET(sock,&tfds))
                 {
-                    //if(!receiveChat(ch)) {
-                    //    printw("Error");
-                    //}
-                    //if(ch->status == 0) {
-                    //    write_to_transcript(ch->message, 0);
-                    //}
-                    //else if(ch->status == 1)
-                    //{
-                    //    
-                    //}
-                    //else if(ch->status == 2)
-                    //{
-                    //    write_to_user_window(ch->id, ch->message);
-                    //}
-                    //else if(ch->status == 3)
-                    //{
-                    //    write_to_transcript(ch->message, 0);
-                    //}
+                    if(!receiveChat(&ch)) {
+                        printw("Error in receiving chat\n");
+                        refresh();
+                        break;
+                    }
+
+                    switch(ch.status)
+                    {
+                        case 0:
+                            write_to_transcript(ch.message,0);
+                            break;
+                        case 1:
+                            break;
+                        case 2:
+                            write_to_user_window(ch.id, ch.message);
+                            break;
+                        case 3:
+                            write_to_transcript(ch.message, 0);
+                            break;
+                    }
+
+
                 }
         }
 

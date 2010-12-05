@@ -78,13 +78,12 @@ int sendChat(Chat * ch)
     }
     else
     {//send size of string and them data
-        printw("MSG: %s\n",sChat);
+        printw("MSG: %s of size: %i\n",sChat,size);
         refresh();
         int recvSize = 0;
         send(sock,&size,sizeof(int),0);
         recv(sock, &recvSize, sizeof(int),0);
         recvSize = send(sock,sChat, size,0);
-        //printw("Sending:%s\n",sChat);
         free(sChat);
         return recvSize;
     }
@@ -103,9 +102,6 @@ int receiveChat(Chat * ch)
 
     deserializeChat(sChat,ch);
     return 0; //no errors    
-    free(sChat);
-
-
 }
 
 int serializeChat(char * msg, Chat * ch)

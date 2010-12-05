@@ -9,7 +9,7 @@ void linkedListInit()
     head = NULL;
 }
 
-void addNode(const char * msg)
+void addNode(char * msg)
 {
     struct node * n;
     n = (struct node *) malloc(sizeof(struct node));
