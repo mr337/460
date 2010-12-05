@@ -7,6 +7,9 @@
 #define MESSAGELENGTH 255 //max message lengh in chars
 #define MAXTRANSMISSIONERRORS 10
 
+long sentBytes;
+long recvBytes;
+
 typedef struct
 {
     char userName[UNAMELENGTH];

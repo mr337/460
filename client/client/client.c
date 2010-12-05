@@ -22,16 +22,14 @@ int handleACK(ConnectACK * ack);
 char ip[15];
 int sock;
 long timeConnected;
-long sentTraffic;
-long receivedTraffic;
 long keysTyped;
 int id;
 Chat ch;
 
-//void count(int sig) {
-//    timeConnected++;
-//    getStats();
-//}
+
+//for connected stats
+time_t tStart, tEnd;
+
 
 int main(int argc, char * argv[])
 {
@@ -103,15 +101,11 @@ int main(int argc, char * argv[])
     noecho();
     initialize_windows();
 
-
+    //start connected timer
+    time(&tStart);
 
     for(;;)
     {
-        //status updates clock
-        //signal(SIGALRM, count);
-        //errno = 0;
-        //ualarm(1000, 1000);
-
         fd_set tfds = fds;
         struct timeval ttmp;
         ttmp.tv_sec = 0;
@@ -127,6 +121,7 @@ int main(int argc, char * argv[])
                 if(FD_ISSET(0,&tfds))
                 {
                     ch.id = id;
+                    keysTyped++;
                     switch(handle_input(getch()))
                     {
                         case CHAT_QUIT:
@@ -187,6 +182,10 @@ int main(int argc, char * argv[])
                     
                     }
                 }
+
+
+                //print stats
+                getStats();
         }
 
         if(q == 1)
@@ -211,8 +210,11 @@ int sendReadyChat(char * msg, int status)
 }
 
 void getStats() {
+
+    time(&tEnd);
+    timeConnected=difftime(tEnd,tStart);
     char stats[240]; //80 witdh * 3 columns
-    sprintf(stats, "Time Connected: %ld:%ld\nSent Traffic: %ld\nReceivedTraffic: %ld", timeConnected/60, timeConnected%60, sentTraffic, receivedTraffic);
+    sprintf(stats, "Time Connected: %ld.%ldm\nSent Traffic:%ldK    Recv Traffic:%ldK\nKeys Typed: %ld", timeConnected/60, ((timeConnected%60)*10)/60, sentBytes/1000, recvBytes/1000,keysTyped);
     write_to_status_window(stats);
 }
 
@@ -224,12 +226,7 @@ void quit()
 
 int handleACK(ConnectACK * ack)
 {
-    //             1 - too many conencted users, please try again
-    //             //             2 - username in use, change and reconnect
-    //             //             3 - something wrong with server - failed when getting user ID
-    //             //             4 - username cannot be NULL
-    //
-
+    //see networking.h for ACK bit values
     switch(ack->status)
     {
         case 1:
