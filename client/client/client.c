@@ -27,10 +27,10 @@ long keysTyped;
 int id;
 Chat ch;
 
-void count(int sig) {
-    timeConnected++;
-    getStats();
-}
+//void count(int sig) {
+//    timeConnected++;
+//    getStats();
+//}
 
 int main(int argc, char * argv[])
 {
@@ -164,6 +164,15 @@ int main(int argc, char * argv[])
                         case 3:
                             write_to_transcript(ch.message, 0);
                             break;
+                        case 4:
+                            break;
+                        case 5:
+                            break;
+                        case 6:
+                            break;
+                        case 7:
+                            break;
+                    
                     }
                 }
         }
