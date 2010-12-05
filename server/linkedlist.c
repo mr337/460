@@ -9,7 +9,7 @@ void linkedListInit()
     head = NULL;
 }
 
-void addNode(char * msg)
+void addNode(const char * msg)
 {
     struct node * n;
     n = (struct node *) malloc(sizeof(struct node));
@@ -47,10 +47,10 @@ int nextNode()
     {
         //TODO need to free up the memory from the old node
         //struct node * old = head;
-        struct node * old = &head;
+        //struct node * old = &head;
         head = head->next;
         length--;
-        free(old);
+        //free(old);
         return 0;
     }
     if(length == 1)

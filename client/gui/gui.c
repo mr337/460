@@ -329,7 +329,8 @@ int handle_input(char input)
         wmove(e_win.window, 0,0);
         scrollok(e_win.window, 0);
 
-              return CHAT_UPDATE;
+             // return CHAT_UPDATE;
+              return CHAT_BROADCAST;
        //       write_to_transcript(message_buffer, 1);
                  //           write_to_user_window(3, "Test");            
         //      message_buffer[0] = '\0';
@@ -404,7 +405,8 @@ int handle_input(char input)
             }
         }
     
-    return CHAT_BROADCAST;
+    //return CHAT_BROADCAST;
+    return CHAT_UPDATE;
 }
 
 void draw_main_interface()

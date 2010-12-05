@@ -9,7 +9,7 @@
 
 typedef struct
 {
-    char * userName[UNAMELENGTH];
+    char userName[UNAMELENGTH];
     int majorVersion;
     int minorVersion;
     //maybe add sAddr so we can read that for the address of server

@@ -15,9 +15,9 @@
 
 //prototypes
 void* thread_proc(void *arg);
-int setUserName(char * name);
-int checkDupUserName(char * name);
-void addMessage(char * msg);
+int setUserName(const char * name);
+int checkDupUserName(const char * name);
+void addMessage(const char * msg);
 int checkRecipients();
 
 int maxUsers;
@@ -121,7 +121,7 @@ int main(int argc, char *argv[])
 
         newsock = accept(listensock, NULL, NULL);
 
-        if(pthread_create(&thread_id, NULL, thread_proc, (void*) newsock) != 0)
+        if(pthread_create(&thread_id, NULL, thread_proc, &newsock) != 0)
         {
             perror("server");
         }
@@ -153,14 +153,12 @@ void* thread_proc(void *arg)
 {
     int sock;
     int id=0;
-    char cIBuffer[sizeof(ConnectInit)];
-
-    sock = (int) arg;
+    sock = *(int*)arg;
 
     //the ConnectINIT part
-    recv(sock, cIBuffer, sizeof(ConnectInit), 0);
-    ConnectInit * cI = &cIBuffer;
-    char * name = cI->userName;
+    ConnectInit cI;
+    recv(sock, &cI, sizeof cI, 0);
+    const char * name = cI.userName;
 
 
     //form ACK response
@@ -254,12 +252,17 @@ void* thread_proc(void *arg)
                     //get size then serialized data
                     int recvSize = 0;
                     recv(sock,&recvSize, sizeof(int),0);
+                    if(recvSize == 0)
+                    {
+                        break;
+                    }
                     send(sock, &recvSize, sizeof(int),0);
+                    printf("Size of message: %i\n",recvSize);
                     char * sChat = malloc(recvSize);
                     char * token = malloc(recvSize);
                     if(!recv(sock, sChat, recvSize,0))
                     {
-                        printf("Error reading chat serialization, use id:%i\n",id);
+                        printf("Error reading chat serialization, user id:%i\n",id);
                         errors++;
 
 
@@ -267,7 +270,7 @@ void* thread_proc(void *arg)
                         {
                         free(ch);
                         free(sChat);
-                            printf("User %s, %i has reaced error threshold: %i, disconnecting...\n",name,id,MAXTRANSMISSIONERRORS);
+                            printf("User %s, %i has reached error threshold: %i, disconnecting...\n",name,id,MAXTRANSMISSIONERRORS);
                             quit = 1;
                             break;
                         }
@@ -351,7 +354,7 @@ void* thread_proc(void *arg)
     pthread_exit(0);
 }
 
-int setUserName(char * name)
+int setUserName(const char * name)
 {
     int i;
     for(i=0;i<maxUsers;i++)
@@ -366,7 +369,7 @@ int setUserName(char * name)
     return -1; //means too many users (something majorly wrong) or username exists
 }
 
-int checkDupUserName(char * name)
+int checkDupUserName(const char * name)
 {
     int i;
     for(i=0; i<maxUsers;i++)
@@ -380,7 +383,7 @@ int checkDupUserName(char * name)
     return 0; //no match 
 }
 
-void addMessage(char * msg)
+void addMessage(const char * msg)
 {
     //add to linked list
     //printf("Added to global message: %s\n",msg);

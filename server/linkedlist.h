@@ -11,7 +11,7 @@ struct node
 struct node * head;
 
 void linkedListInit();
-void addNode(char * msg);
+void addNode(const char * msg);
 char * getNode();
 int nextNode();
 int isNull();

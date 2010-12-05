@@ -35,20 +35,15 @@ void count(int sig) {
 int main(int argc, char * argv[])
 {
 
-    //if(argc != 3)
-    //{
-    //    printf("Must be in format program Server Port\n");
-    //    exit(EXIT_SUCCESS);
-    //}
-
+    //begin connection process
     ConnectInit * cI = (ConnectInit *) malloc(sizeof(ConnectInit));
-
     initialize_gui();
     echo();
+
+    //gather information
     printw("Please enter a username:  ");
     refresh();
     scanw("%s", cI->userName);
-
 
     printw("\nPlease enter IP address:  ");
     refresh();
@@ -57,10 +52,8 @@ int main(int argc, char * argv[])
     printw("Connecting.....\n");
     refresh();
 
-
     //connecto to server
     connectToServer(ip,5000);
-
     if(isConnected()!= 1)
     {
         printw("\nFailed to connect to server.\n");
@@ -70,18 +63,14 @@ int main(int argc, char * argv[])
         quit();
     }
 
-
-    printw("Submitting username: %s\n", argv[1]);
-
     //code to init the server with details
     cI->majorVersion = 1;
     cI->minorVersion = 9;
     sendConnectInit(cI);
     
-
-
     //wait for ConnectACK for id and such
-    sleep(1);
+    //sleep(1);
+
     ConnectACK * ack = (ConnectACK*)malloc(sizeof(ConnectACK));
     getACK(ack);
     printw("Recieved ID: %i  Status:%i\n", ack->id, ack->status);
@@ -104,19 +93,21 @@ int main(int argc, char * argv[])
     noecho();
     initialize_windows();
 
+
+
     for(;;)
     {
-        signal(SIGALRM, count);
-
-        errno = 0;
-        ualarm(1000, 1000);
+        //status updates clock
+        //signal(SIGALRM, count);
+        //errno = 0;
+        //ualarm(1000, 1000);
 
         fd_set tfds = fds;
         struct timeval ttmp;
         ttmp.tv_sec = 0;
         ttmp.tv_usec = t.tv_usec;
 
-        switch(pselect(sock+1,&tfds,NULL,NULL,NULL,NULL))
+        switch(select(sock+1,&tfds,NULL,NULL,NULL))
         {
             case -1:
                 printw("Something wrong\n");
@@ -124,38 +115,55 @@ int main(int argc, char * argv[])
             default:
                 if(FD_ISSET(0,&tfds))
                 {
-                    Chat * ch = (Chat *)malloc(sizeof(Chat));
-                    char c = getch();
-                    int i = handle_input(c);
-                    ch->id = id;
-                    strcpy(ch->message, *cI->userName);
-                    if(i == 1) {
-                        ch->status = 1;
-                    } else if(i == 2) {
-                        ch->status = 0;
-                        strcat(ch->message, message_buffer);
-                        strcpy(message_buffer, "\0");
-                    } else {
-                        ch->status = 2;
-                        strcpy(ch->message, &c);
+                    //char c = getch();
+                    //int i = handle_input(c);
+                    //ch->id = id;
+                    //strcpy(ch->message, *cI->userName);
+
+                    ch.id = id;
+
+                    switch(handle_input(getch()))
+                    {
+                        case CHAT_QUIT:
+                            ch.status=1;
+                            strcpy(ch.message,"QUITING");
+                            sendChat(&ch);
+                            break;
+                        case CHAT_UPDATE:
+                            ch.status=2;
+                            strncpy(ch.message,message_buffer,MESSAGELENGTH); 
+                            sendChat(&ch);
+                            break;
+                        case CHAT_BROADCAST:
+                            ch.status=3;
+                            snprintf(ch.message,UNAMELENGTH+MESSAGELENGTH,"%s: %s",message_buffer,*cI->userName);
+                            sendChat(&ch);
+                            break;
+                        default:
+                            //other stuff not defined yet
+                            break;
                     }
-                    sendChat(ch);
                 }
                 if(FD_ISSET(sock,&tfds))
                 {
-                    Chat * ch = (Chat *)malloc(sizeof(Chat));
-                    if(!receiveChat(ch)) {
-                        printw("Error");
-                    }
-                    if(ch->status == 0) {
-                        write_to_transcript(ch->message, 0);
-                    }else if(ch->status == 1) {
-                        
-                    }else if(ch->status == 2) {
-                        write_to_user_window(ch->id, ch->message);
-                    }else if(ch->status == 3) {
-                        write_to_transcript(ch->message, 0);
-                    }
+                    //if(!receiveChat(ch)) {
+                    //    printw("Error");
+                    //}
+                    //if(ch->status == 0) {
+                    //    write_to_transcript(ch->message, 0);
+                    //}
+                    //else if(ch->status == 1)
+                    //{
+                    //    
+                    //}
+                    //else if(ch->status == 2)
+                    //{
+                    //    write_to_user_window(ch->id, ch->message);
+                    //}
+                    //else if(ch->status == 3)
+                    //{
+                    //    write_to_transcript(ch->message, 0);
+                    //}
                 }
         }
 
@@ -168,7 +176,9 @@ int main(int argc, char * argv[])
     free(cI);
 
     quit();
+    exit(EXIT_SUCCESS);
 }
+
 int sendReadyChat(char * msg, int status)
 {//0 means nothing got sent
     ch.id=id;
@@ -179,7 +189,7 @@ int sendReadyChat(char * msg, int status)
 }
 
 void getStats() {
-    char * stats;
+    char stats[240]; //80 witdh * 3 columns
     sprintf(stats, "Time Connected: %ld:%ld\nSent Traffic: %ld\nReceivedTraffic: %ld", timeConnected/60, timeConnected%60, sentTraffic, receivedTraffic);
     write_to_status_window(stats);
 }
@@ -192,5 +202,4 @@ void quit()
     sendChat(ch);
     endwin();
     closeServer();
-    exit(EXIT_SUCCESS);
 }
