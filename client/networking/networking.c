@@ -78,8 +78,8 @@ int sendChat(Chat * ch)
     }
     else
     {//send size of string and them data
-        printw("MSG: %s of size: %i\n",sChat,size);
-        refresh();
+        //printw("MSG: %s of size: %i\n",sChat,size);
+        //refresh();
         int recvSize = 0;
         send(sock,&size,sizeof(int),0);
         recv(sock, &recvSize, sizeof(int),0);

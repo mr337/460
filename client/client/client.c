@@ -105,6 +105,7 @@ int main(int argc, char * argv[])
         ttmp.tv_sec = 0;
         ttmp.tv_usec = t.tv_usec;
 
+                                        //need the timeout for stat
         switch(select(sock+1,&tfds,NULL,NULL,&ttmp))
         {
             case -1:
@@ -114,16 +115,13 @@ int main(int argc, char * argv[])
                 if(FD_ISSET(0,&tfds))
                 {
                     ch.id = id;
-                    printw("Something on STDIN\n");
-                    printf("Something on STDIN\n");
-                    refresh();
-
                     switch(handle_input(getch()))
                     {
                         case CHAT_QUIT:
                             ch.status=1;
                             strcpy(ch.message,"QUITING");
                             sendChat(&ch);
+                            q=1; //bit to quit
                             break;
                         case CHAT_UPDATE:
                             ch.status=2;
@@ -131,8 +129,8 @@ int main(int argc, char * argv[])
                             sendChat(&ch);
                             break;
                         case CHAT_BROADCAST:
-                            ch.status=3;
-                            snprintf(ch.message,UNAMELENGTH+MESSAGELENGTH,"%s: %s",message_buffer,cI->userName);
+                            ch.status=0;
+                            snprintf(ch.message,UNAMELENGTH+MESSAGELENGTH,"%s: %s",cI->userName,message_buffer);
                             sendChat(&ch);
                             break;
                         default:
@@ -142,15 +140,20 @@ int main(int argc, char * argv[])
                 }
                 if(FD_ISSET(sock,&tfds))
                 {
-                    if(!receiveChat(&ch)) {
+                    if(receiveChat(&ch)) {
                         printw("Error in receiving chat\n");
                         refresh();
                         break;
                     }
 
+                    //printw("Receiving: %s   Status:%i\n",ch.message,ch.status);
+                    //refresh();
+
                     switch(ch.status)
                     {
                         case 0:
+                            //printw("Writing to transcript %s\n",ch.message);
+                            //refresh();
                             write_to_transcript(ch.message,0);
                             break;
                         case 1:
@@ -162,8 +165,6 @@ int main(int argc, char * argv[])
                             write_to_transcript(ch.message, 0);
                             break;
                     }
-
-
                 }
         }
 
@@ -196,10 +197,6 @@ void getStats() {
 
 void quit()
 {
-    Chat * ch = (Chat *)malloc(sizeof(Chat));
-    ch->id = 0;
-    ch->status = 1; //disconnect bit
-    sendChat(ch);
     endwin();
     closeServer();
 }
