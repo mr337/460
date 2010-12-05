@@ -20,12 +20,15 @@ void getStats();
 int handleACK(ConnectACK * ack);
 
 char ip[15];
+char user[UNAMELENGTH+200];
 int sock;
 long timeConnected;
 long keysTyped;
 int id;
 Chat ch;
 
+int majVersion = 1;
+int minVersion = 1;
 
 //for connected stats
 time_t tStart, tEnd;
@@ -42,7 +45,17 @@ int main(int argc, char * argv[])
     //gather information
     printw("Please enter a username:  ");
     refresh();
-    scanw("%s", cI->userName);
+    scanw("%s",user);
+    if(strlen(user) > UNAMELENGTH)
+    {
+        printw("\nUsername too long, max length is:%i\n",UNAMELENGTH);
+        refresh();
+        getch();
+        endwin();
+        quit();
+        exit(EXIT_SUCCESS);
+    }
+    strncpy(cI->userName,user,strlen(user));
 
     printw("\nPlease enter IP address:  ");
     refresh();
@@ -64,8 +77,8 @@ int main(int argc, char * argv[])
     }
 
     //code to init the server with details
-    cI->majorVersion = 1;
-    cI->minorVersion = 9;
+    cI->majorVersion = majVersion;
+    cI->minorVersion = minVersion;
     sendConnectInit(cI);
     
     //wait for ConnectACK for id and such
@@ -213,9 +226,13 @@ void getStats() {
 
     time(&tEnd);
     timeConnected=difftime(tEnd,tStart);
-    char stats[240]; //80 witdh * 3 columns
-    sprintf(stats, "Time Connected: %ld.%ldm\nSent Traffic:%ldK    Recv Traffic:%ldK\nKeys Typed: %ld", timeConnected/60, ((timeConnected%60)*10)/60, sentBytes/1000, recvBytes/1000,keysTyped);
-    write_to_status_window(stats);
+    char buf[240]; //80 witdh * 3 columns
+    sprintf(buf, "Time Connected: %ld.%ldm\nSent Traffic:%ldK    Recv Traffic:%ldK\nKeys Typed: %ld", timeConnected/60, ((timeConnected%60)*10)/60, sentBytes/1000, recvBytes/1000,keysTyped);
+    write_to_status_window(buf);
+
+    memset(buf,0,240);
+    sprintf(buf,"Program: Sienna  Version:%i.%i\nUser Name: %s\nServer IP:%s",majVersion,minVersion,user,ip);
+    write_to_program_window(buf);
 }
 
 void quit()
