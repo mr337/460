@@ -17,6 +17,7 @@
 void quit();
 int sendReadyChat(char * msg, int status);
 void getStats();
+int handleACK(ConnectACK * ack);
 
 char ip[15];
 int sock;
@@ -61,6 +62,7 @@ int main(int argc, char * argv[])
         getch();
         endwin();
         quit();
+        exit(EXIT_SUCCESS);
     }
 
     //code to init the server with details
@@ -73,10 +75,9 @@ int main(int argc, char * argv[])
     getACK(ack);
     printw("Recieved ID: %i  Status:%i\n\n", ack->id, ack->status);
     id = ack->id;
-    
-    if(ack->status == 1)
-    {
-        printw("The user name is already in use. Please try again with a new user name.\n");
+
+    if(handleACK(ack))
+    {//server didn't want client
         printw("Exiting...... Press any key to continue\n");
         refresh();
         getch();
@@ -219,4 +220,33 @@ void quit()
 {
     endwin();
     closeServer();
+}
+
+int handleACK(ConnectACK * ack)
+{
+    //             1 - too many conencted users, please try again
+    //             //             2 - username in use, change and reconnect
+    //             //             3 - something wrong with server - failed when getting user ID
+    //             //             4 - username cannot be NULL
+    //
+
+    switch(ack->status)
+    {
+        case 1:
+            printw("Too many user connected to server. Please wait and try again.\n");
+            return 1;
+        case 2:
+            printw("The user name is already in use. Please try again with a new user name.\n");
+            return 1;
+        case 3:
+            printw("The server is not properly running correctly. Please contact adminitrator.\n");
+            return 1;
+        case 4:
+            printw("The username is NULL or just spaces. Please correct username and try again.\n");
+            return 1;
+        default:
+            break;
+    }
+
+    return 0; //no problems and continue loading client
 }
