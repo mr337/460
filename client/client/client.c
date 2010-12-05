@@ -71,8 +71,19 @@ int main(int argc, char * argv[])
     //wait for ConnectACK for id and such
     ConnectACK * ack = (ConnectACK*)malloc(sizeof(ConnectACK));
     getACK(ack);
-    printw("Recieved ID: %i  Status:%i\n", ack->id, ack->status);
+    printw("Recieved ID: %i  Status:%i\n\n", ack->id, ack->status);
     id = ack->id;
+    
+    if(ack->status == 1)
+    {
+        printw("The user name is already in use. Please try again with a new user name.\n");
+        printw("Exiting...... Press any key to continue\n");
+        refresh();
+        getch();
+        quit();
+        exit(EXIT_SUCCESS);
+    }
+
     free(ack);
     refresh();
 
