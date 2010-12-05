@@ -106,17 +106,17 @@ int main(int argc, char * argv[])
 
     for(;;)
     {
-        signal(SIGALRM, count);
+        //signal(SIGALRM, count);
 
-        errno = 0;
-        ualarm(1000, 1000);
+        //errno = 0;
+        //ualarm(1000, 1000);
 
         fd_set tfds = fds;
         struct timeval ttmp;
         ttmp.tv_sec = 0;
         ttmp.tv_usec = t.tv_usec;
 
-        switch(pselect(sock+1,&tfds,NULL,NULL,NULL,NULL))
+        switch(select(sock+1,&tfds,NULL,NULL,NULL))
         {
             case -1:
                 printw("Something wrong\n");
@@ -128,9 +128,11 @@ int main(int argc, char * argv[])
                     char c = getch();
                     int i = handle_input(c);
                     ch->id = id;
+                    printf("\nUser id: %i", ch->id);
                     strcpy(ch->message, *cI->userName);
                     if(i == 1) {
                         ch->status = 1;
+                        strcat(ch->message, " is quitting.");
                     } else if(i == 2) {
                         ch->status = 0;
                         strcat(ch->message, message_buffer);
@@ -145,7 +147,7 @@ int main(int argc, char * argv[])
                 {
                     Chat * ch = (Chat *)malloc(sizeof(Chat));
                     if(!receiveChat(ch)) {
-                        printw("Error");
+                        printf("Error");
                     }
                     if(ch->status == 0) {
                         write_to_transcript(ch->message, 0);
