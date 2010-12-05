@@ -192,6 +192,9 @@ void initialize_window(WINDOW *win, int window_height, int window_width)
         write_to_window("", window_width, win);
     }
     write_to_window("", window_width, win);
+
+    //clear message_buffer - old chat message was stored there
+    memset(message_buffer,0,MESSAGELENGTH);
 }
 
 void initialize_colors()
