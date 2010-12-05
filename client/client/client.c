@@ -16,7 +16,7 @@
 
 void quit();
 int sendReadyChat(char * msg, int status);
-
+void getStats();
 
 char ip[15];
 int sock;
@@ -106,7 +106,7 @@ int main(int argc, char * argv[])
 
     for(;;)
     {
-        catch_signal(SIGALRM, count);
+        signal(SIGALRM, count);
 
         errno = 0;
         ualarm(1000, 1000);
@@ -116,7 +116,7 @@ int main(int argc, char * argv[])
         ttmp.tv_sec = 0;
         ttmp.tv_usec = t.tv_usec;
 
-        switch(select(sock+1,&tfds,NULL,NULL,&ttmp))
+        switch(pselect(sock+1,&tfds,NULL,NULL,NULL,NULL))
         {
             case -1:
                 printw("Something wrong\n");
@@ -137,7 +137,7 @@ int main(int argc, char * argv[])
                         strcpy(message_buffer, "\0");
                     } else {
                         ch->status = 2;
-                        strcpy(ch->message, c);
+                        strcpy(ch->message, &c);
                     }
                     sendChat(ch);
                 }
