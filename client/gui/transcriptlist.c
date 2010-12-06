@@ -119,7 +119,7 @@ int updateTranscript(char *message)
         }
 
         if ( i == msg_len - 1  ) {
-            line[i+1] = '\0';
+            line[i - lastBreak + 1] = '\0';
             addNode(line);
             message_count++;
             line = messages[message_count];

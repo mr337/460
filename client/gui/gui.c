@@ -504,6 +504,7 @@ int handle_chat_input(char input)
             write_line(" ", e_win.w, e_win.window);
             wmove(e_win.window, 0,0);
             scrollok(e_win.window, 0);
+            void clear_buffer();
             message_index = 0;        
             if ( chat_contains_gaudy ) {
                 chat_contains_gaudy = 0;

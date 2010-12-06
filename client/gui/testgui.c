@@ -18,6 +18,8 @@ int main(int argc, char *argv[])
            case CHAT_LURK:
               show_lurk_window();
               break;
+           case CHAT_BROADCAST:
+              write_to_transcript(message_buffer, 0);
            default: 
             write_to_user_window(0, message_buffer);
         }

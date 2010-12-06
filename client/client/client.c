@@ -135,7 +135,7 @@ int main(int argc, char * argv[])
                 {
                     ch.id = id;
                     keysTyped++;
-                    usleep(10000);
+                    usleep(20000);
                     switch(handle_input(getch()))
                     {
                         case CHAT_QUIT:
@@ -152,6 +152,7 @@ int main(int argc, char * argv[])
                         case CHAT_BROADCAST:
                             ch.status=0;
                             snprintf(ch.message,UNAMELENGTH+MESSAGELENGTH,"%s: %s",cI->userName,message_buffer);
+                            clear_buffer();
                             sendChat(&ch);
                             ch.status=2;
                             strcpy(ch.message,"  ");
