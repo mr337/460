@@ -179,6 +179,11 @@ int main(int argc, char * argv[])
                             sprintf(ch.message, "yelllist");
                             sendChat(&ch);
                             break;
+                        case -1:
+                            ch.status=2;
+                            strcpy(ch.message,"  ");
+                            sendChat(&ch);
+                            break;
                         default:
                             //other stuff not defined yet
                             break;
