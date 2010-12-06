@@ -16,39 +16,46 @@
 
 void quit();
 int sendReadyChat(char * msg, int status);
-
+void getStats();
+int handleACK(ConnectACK * ack);
 
 char ip[15];
+char user[UNAMELENGTH+200];
 int sock;
 long timeConnected;
-long sentTraffic;
-long receivedTraffic;
 long keysTyped;
 int id;
 Chat ch;
 
-void count(int sig) {
-    timeConnected++;
-    getStats();
-}
+int majVersion = 1;
+int minVersion = 1;
+
+//for connected stats
+time_t tStart, tEnd;
+
 
 int main(int argc, char * argv[])
 {
 
-    //if(argc != 3)
-    //{
-    //    printf("Must be in format program Server Port\n");
-    //    exit(EXIT_SUCCESS);
-    //}
-
+    //begin connection process
     ConnectInit * cI = (ConnectInit *) malloc(sizeof(ConnectInit));
-
     initialize_gui();
     echo();
+
+    //gather information
     printw("Please enter a username:  ");
     refresh();
-    scanw("%s", cI->userName);
-
+    scanw("%s",user);
+    if(strlen(user) > UNAMELENGTH)
+    {
+        printw("\nUsername too long, max length is:%i\n",UNAMELENGTH);
+        refresh();
+        getch();
+        endwin();
+        quit();
+        exit(EXIT_SUCCESS);
+    }
+    strncpy(cI->userName,user,strlen(user));
 
     printw("\nPlease enter IP address:  ");
     refresh();
@@ -57,10 +64,8 @@ int main(int argc, char * argv[])
     printw("Connecting.....\n");
     refresh();
 
-
     //connecto to server
     connectToServer(ip,5000);
-
     if(isConnected()!= 1)
     {
         printw("\nFailed to connect to server.\n");
@@ -68,24 +73,29 @@ int main(int argc, char * argv[])
         getch();
         endwin();
         quit();
+        exit(EXIT_SUCCESS);
     }
 
-
-    printw("Submitting username: %s\n", argv[1]);
-
     //code to init the server with details
-    cI->majorVersion = 1;
-    cI->minorVersion = 9;
+    cI->majorVersion = majVersion;
+    cI->minorVersion = minVersion;
     sendConnectInit(cI);
     
-
-
     //wait for ConnectACK for id and such
-    sleep(1);
     ConnectACK * ack = (ConnectACK*)malloc(sizeof(ConnectACK));
     getACK(ack);
-    printw("Recieved ID: %i  Status:%i\n", ack->id, ack->status);
+    printw("Recieved ID: %i  Status:%i\n\n", ack->id, ack->status);
     id = ack->id;
+
+    if(handleACK(ack))
+    {//server didn't want client
+        printw("Exiting...... Press any key to continue\n");
+        refresh();
+        getch();
+        quit();
+        exit(EXIT_SUCCESS);
+    }
+
     free(ack);
     refresh();
 
@@ -104,18 +114,17 @@ int main(int argc, char * argv[])
     noecho();
     initialize_windows();
 
+    //start connected timer
+    time(&tStart);
+
     for(;;)
     {
-        catch_signal(SIGALRM, count);
-
-        errno = 0;
-        ualarm(1000, 1000);
-
         fd_set tfds = fds;
         struct timeval ttmp;
         ttmp.tv_sec = 0;
         ttmp.tv_usec = t.tv_usec;
 
+                                        //need the timeout for stat
         switch(select(sock+1,&tfds,NULL,NULL,&ttmp))
         {
             case -1:
@@ -124,39 +133,72 @@ int main(int argc, char * argv[])
             default:
                 if(FD_ISSET(0,&tfds))
                 {
-                    Chat * ch = (Chat *)malloc(sizeof(Chat));
-                    char c = getch();
-                    int i = handle_input(c);
-                    ch->id = id;
-                    strcpy(ch->message, *cI->userName);
-                    if(i == 1) {
-                        ch->status = 1;
-                    } else if(i == 2) {
-                        ch->status = 0;
-                        strcat(ch->message, message_buffer);
-                        strcpy(message_buffer, "\0");
-                    } else {
-                        ch->status = 2;
-                        strcpy(ch->message, c);
+                    ch.id = id;
+                    keysTyped++;
+                    switch(handle_input(getch()))
+                    {
+                        case CHAT_QUIT:
+                            ch.status=1;
+                            strcpy(ch.message,"QUITING");
+                            sendChat(&ch);
+                            q=1; //bit to quit
+                            break;
+                        case CHAT_UPDATE:
+                            ch.status=2;
+                            strncpy(ch.message,message_buffer,MESSAGELENGTH); 
+                            sendChat(&ch);
+                            break;
+                        case CHAT_BROADCAST:
+                            ch.status=0;
+                            snprintf(ch.message,UNAMELENGTH+MESSAGELENGTH,"%s: %s",cI->userName,message_buffer);
+                            sendChat(&ch);
+                            break;
+                        default:
+                            //other stuff not defined yet
+                            break;
                     }
-                    sendChat(ch);
                 }
                 if(FD_ISSET(sock,&tfds))
                 {
-                    Chat * ch = (Chat *)malloc(sizeof(Chat));
-                    if(!receiveChat(ch)) {
-                        printw("Error");
+                    if(receiveChat(&ch)) {
+                        printw("Error in receiving chat\n");
+                        refresh();
+                        break;
                     }
-                    if(ch->status == 0) {
-                        write_to_transcript(ch->message, 0);
-                    }else if(ch->status == 1) {
-                        
-                    }else if(ch->status == 2) {
-                        write_to_user_window(ch->id, ch->message);
-                    }else if(ch->status == 3) {
-                        write_to_transcript(ch->message, 0);
+
+                    //printw("Receiving: %s   Status:%i\n",ch.message,ch.status);
+                    //refresh();
+
+                    switch(ch.status)
+                    {
+                        case 0:
+                            //printw("Writing to transcript %s\n",ch.message);
+                            //refresh();
+                            write_to_transcript(ch.message,0);
+                            break;
+                        case 1:
+                            break;
+                        case 2:
+                            write_to_user_window(ch.id, ch.message);
+                            break;
+                        case 3:
+                            write_to_transcript(ch.message, 0);
+                            break;
+                        case 4:
+                            break;
+                        case 5:
+                            break;
+                        case 6:
+                            break;
+                        case 7:
+                            break;
+                    
                     }
                 }
+
+
+                //print stats
+                getStats();
         }
 
         if(q == 1)
@@ -168,7 +210,9 @@ int main(int argc, char * argv[])
     free(cI);
 
     quit();
+    exit(EXIT_SUCCESS);
 }
+
 int sendReadyChat(char * msg, int status)
 {//0 means nothing got sent
     ch.id=id;
@@ -179,18 +223,44 @@ int sendReadyChat(char * msg, int status)
 }
 
 void getStats() {
-    char * stats;
-    sprintf(stats, "Time Connected: %ld:%ld\nSent Traffic: %ld\nReceivedTraffic: %ld", timeConnected/60, timeConnected%60, sentTraffic, receivedTraffic);
-    write_to_status_window(stats);
+
+    time(&tEnd);
+    timeConnected=difftime(tEnd,tStart);
+    char buf[240]; //80 witdh * 3 columns
+    sprintf(buf, "Time Connected: %ld.%ldm\nSent Traffic:%ldK    Recv Traffic:%ldK\nKeys Typed: %ld", timeConnected/60, ((timeConnected%60)*10)/60, sentBytes/1000, recvBytes/1000,keysTyped);
+    write_to_status_window(buf);
+
+    memset(buf,0,240);
+    sprintf(buf,"Program: Sienna  Version:%i.%i\nUser Name: %s\nServer IP:%s",majVersion,minVersion,user,ip);
+    write_to_program_window(buf);
 }
 
 void quit()
 {
-    Chat * ch = (Chat *)malloc(sizeof(Chat));
-    ch->id = 0;
-    ch->status = 1; //disconnect bit
-    sendChat(ch);
     endwin();
     closeServer();
-    exit(EXIT_SUCCESS);
+}
+
+int handleACK(ConnectACK * ack)
+{
+    //see networking.h for ACK bit values
+    switch(ack->status)
+    {
+        case 1:
+            printw("Too many user connected to server. Please wait and try again.\n");
+            return 1;
+        case 2:
+            printw("The user name is already in use. Please try again with a new user name.\n");
+            return 1;
+        case 3:
+            printw("The server is not properly running correctly. Please contact adminitrator.\n");
+            return 1;
+        case 4:
+            printw("The username is NULL or just spaces. Please correct username and try again.\n");
+            return 1;
+        default:
+            break;
+    }
+
+    return 0; //no problems and continue loading client
 }

@@ -211,6 +211,9 @@ void initialize_window(WINDOW *win, int window_height, int window_width)
         write_to_window("", window_width, win);
     }
     write_to_window("", window_width, win);
+
+    //clear message_buffer - old chat message was stored there
+    memset(message_buffer,0,MESSAGELENGTH);
 }
 
 void initialize_colors()
@@ -348,9 +351,9 @@ int handle_input(char input)
         wmove(e_win.window, 0,0);
         scrollok(e_win.window, 0);
 
-         //     return CHAT_UPDATE;
               write_to_transcript(message_buffer, 1);
               message_buffer[0] = '\0';
+              return CHAT_BROADCAST;
               message_index = 0;        
           } else if ( input == CTRL_L ) {
               write_to_transcript("Lurk!", 0);
@@ -422,7 +425,8 @@ int handle_input(char input)
             }
         }
     
-    return CHAT_BROADCAST;
+    //return CHAT_BROADCAST;
+    return CHAT_UPDATE;
 }
 
 void draw_main_interface()

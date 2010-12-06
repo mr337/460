@@ -23,10 +23,11 @@ int checkRecipients();
 int maxUsers;
 int numUsers;
 int totalUsers;
+int timeout;
 int messageCount;
 char **userNames;
 int * userStatus;
-int * messageStatus; //0-have not recieved message, 1-recieved message, -1 dropped user
+int * messageStatus; //0-have not recieved message, 1-recieved message, -1 dropped user, 2 ejected
 int getMessage(int id, char * msg);
 
 sem_t lusers;
@@ -37,9 +38,9 @@ int main(int argc, char *argv[])
 
     //char master_array[maxUsers];
 
-    if(argc != 3)
+    if(argc != 4)
     {
-        printf("Must be in format: server port Max_Clients\n");
+        printf("Must be in format: server port Max_Clients MaxIdle_Minutes\n");
         exit(EXIT_SUCCESS);
     }
 
@@ -47,6 +48,7 @@ int main(int argc, char *argv[])
     //get info from CL
     int port = atoi(argv[1]);
     maxUsers = atoi(argv[2]);
+    timeout = atoi(argv[3])*60; //get seconds
 
     if(port == 0 || maxUsers == 0)
     {
@@ -136,10 +138,10 @@ int main(int argc, char *argv[])
             printf("Userid: %i    Name: %s\n",i, userNames[i]);
         }
 
-        usleep(500000);
+        usleep(500000); //sleep half a second
 
         if(startLinkedList == 1)
-        {
+        {//only to be ran on startus
             startLinkedList = 0;
             nextNode();
         }
@@ -154,6 +156,8 @@ void* thread_proc(void *arg)
     int sock;
     int id=0;
     char cIBuffer[sizeof(ConnectInit)];
+    time_t lastSeen, now; 
+    
 
     sock = (int) arg;
 
@@ -220,7 +224,7 @@ void* thread_proc(void *arg)
     FD_SET(sock,&fds);
     struct timeval t;
     t.tv_sec = 0;
-    t.tv_usec = 500000; //sleep half a second 
+    t.tv_usec = 5000; //sleep half a second 
 
     messageStatus[id] = 0; //ready to relay messages
     int quit = 0;
@@ -235,6 +239,10 @@ void* thread_proc(void *arg)
     free(joinBroadcast);
 
     printf("Getting ready for chat loop for user id:%i\n", id);
+
+    //clear values
+    time(&lastSeen);
+    time(&now);
 
     for(;;)
     {
@@ -275,6 +283,7 @@ void* thread_proc(void *arg)
                     }
 
 
+                    time(&lastSeen);
                     strcpy(token,sChat);
 
                     char * delim = strtok(token,"`");
@@ -317,6 +326,16 @@ void* thread_proc(void *arg)
                 {//nothing to send, restart loop
                     sem_post(&lmessage);
                     free(chatMsg);
+
+                    //timeout code
+                    time(&now);
+                    if(difftime(now,lastSeen) > timeout)
+                    {
+                        printf("Client #%i has not been since for  %.0f seconds. Disconnecting client\n",id,difftime(now,lastSeen));
+                        quit=1;
+                        break;
+                    }
+
                     continue;
                 }
 
@@ -327,10 +346,11 @@ void* thread_proc(void *arg)
                 recv(sock, &recvSize,sizeof(int),0);
                 recvSize = send(sock,chatMsg,recvSize,0);
                 
-                printf("BROADCAST USER %s:%s\n",name,chatMsg);   
+                printf("USER %s:%s\n",name,chatMsg);   
 
                 free(chatMsg);
         }
+
 
         if(quit == 1)
         {

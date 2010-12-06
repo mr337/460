@@ -7,9 +7,12 @@
 #define MESSAGELENGTH 255 //max message lengh in chars
 #define MAXTRANSMISSIONERRORS 10
 
+long sentBytes;
+long recvBytes;
+
 typedef struct
 {
-    char * userName[UNAMELENGTH];
+    char userName[UNAMELENGTH];
     int majorVersion;
     int minorVersion;
     //maybe add sAddr so we can read that for the address of server
@@ -70,6 +73,10 @@ int getSock();
 //status bits: 1 - user disconnecting...
 //status bits: 2 - this is a keyboard update
 //status bits: 3 - gaudy
-//status bits: 4 - deep-six
+//status bits: 4 - deep-six GET not voted for users list
+//status bits: 5 - deep-six vote for user
+//status bits: 6 - deep-size YOU GOT EJECTED
+//status buts: 7 - idle timeou
+//status bits: 8 - deep-six list of not voted  
 
 #endif

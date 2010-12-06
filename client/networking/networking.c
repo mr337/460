@@ -37,6 +37,11 @@ int connectToServer(char * ipAddress, int port)
         connStatus = 1;
     }
 
+
+    //set vars
+    sentBytes=0;
+    recvBytes=0;
+
     return connStatus;
 }
 
@@ -58,12 +63,16 @@ int getSock()
 
 int sendConnectInit(ConnectInit * cI)
 {
-    return send(sock, cI, sizeof(ConnectInit), 0);
+    int tmpSent = send(sock, cI, sizeof(ConnectInit), 0);
+    sentBytes += tmpSent;
+    return tmpSent;
 }
 
 int getACK(ConnectACK * cACK)
 {
-    return recv(sock, cACK, sizeof(ConnectACK),0);
+    int tmpRecv = recv(sock, cACK, sizeof(ConnectACK),0);
+    recvBytes += tmpRecv;
+    return tmpRecv; 
 }
 
 int sendChat(Chat * ch)
@@ -78,33 +87,34 @@ int sendChat(Chat * ch)
     }
     else
     {//send size of string and them data
+        //printw("MSG: %s of size: %i\n",sChat,size);
+        //refresh();
         int recvSize = 0;
-        send(sock,&size,sizeof(int),0);
-        recv(sock, &recvSize, sizeof(int),0);
+        sentBytes += send(sock,&size,sizeof(int),0);
+        recvBytes += recv(sock, &recvSize, sizeof(int),0);
         recvSize = send(sock,sChat, size,0);
-        //printw("Sending:%s\n",sChat);
+        recvBytes += recvSize;
         free(sChat);
         return recvSize;
-
     }
 }
 
 int receiveChat(Chat * ch)
 {
     int recvSize = 0;
-    recv(sock, &recvSize, sizeof(int),0);
-    send(sock,&recvSize,sizeof(int),0);
+    recvBytes += recv(sock, &recvSize, sizeof(int),0);
+    sentBytes += send(sock,&recvSize,sizeof(int),0);
     char * sChat = malloc(recvSize);
-    if(!recv(sock, sChat,recvSize,0))
+    int tmpRecvSize = recv(sock, sChat,recvSize,0);
+    if(!tmpRecvSize)
     {
         return 2; //something wrong
     }
 
+    recvBytes += tmpRecvSize;
+
     deserializeChat(sChat,ch);
     return 0; //no errors    
-    free(sChat);
-
-
 }
 
 int serializeChat(char * msg, Chat * ch)
