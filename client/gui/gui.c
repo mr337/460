@@ -373,7 +373,13 @@ int handle_input(char input)
 
 void show_ds_window(char *message)
 {
-
+    if ( d_win.window == NULL ) {
+        d_win.window = newwin(d_win.h, d_win.w, d_win.y, d_win.x);
+    }
+    wclear(d_win.window);
+    wprintw(d_win.window, message);
+    wrefresh(d_win.window);
+    deep_six_on = 1;
 }
 
 void show_eject_window(char *message)
@@ -393,9 +399,6 @@ int handle_chat_input(char input)
               write_line(" ", e_win.w, e_win.window);
               wmove(e_win.window, 0,0);
               scrollok(e_win.window, 0);
-
-              //write_to_transcript(message_buffer, 1);
-              //message_buffer[0] = '\0';
               message_index = 0;        
               return CHAT_BROADCAST;
           } else if ( input == CTRL_L ) {
@@ -434,9 +437,13 @@ int handle_chat_input(char input)
                                  e_win.w, e_win.window);
                      }
                      wmove(e_win.window, 0, newx);
-                     wrefresh(e_win.window);
                   }
-              }               
+              }
+              wrefresh(e_win.window);
+              if ( message_index <= 0 ) {
+                  return -1;
+              }
+                                        
           } else if ( input == CTRL_G ) {        
               if ( gaudy_on == 0 ) { 
                   message_buffer[message_index++] = STX;
@@ -448,14 +455,7 @@ int handle_chat_input(char input)
                   wattroff(e_win.window, A_REVERSE);
               }        
           } else if ( input == CTRL_6 ) {
-              if ( d_win.window == NULL ) {
-                  d_win.window = newwin(d_win.h, d_win.w, d_win.y, d_win.x);
-              }
-              wclear(d_win.window);
-              wprintw(d_win.window, "Here be the list");
-              wrefresh(d_win.window);
-              deep_six_on = 1;
-              return DS_REQUEST;
+                            return DS_REQUEST;
           }
         }
 
