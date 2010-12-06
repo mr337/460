@@ -135,6 +135,7 @@ int main(int argc, char * argv[])
                 {
                     ch.id = id;
                     keysTyped++;
+                    usleep(10000);
                     switch(handle_input(getch()))
                     {
                         case CHAT_QUIT:
@@ -151,6 +152,21 @@ int main(int argc, char * argv[])
                         case CHAT_BROADCAST:
                             ch.status=0;
                             snprintf(ch.message,UNAMELENGTH+MESSAGELENGTH,"%s: %s",cI->userName,message_buffer);
+                            sendChat(&ch);
+                            break;
+                        case DS_REQUEST:
+                            ch.status=4;
+                            strcpy(ch.message, "getlist");
+                            sendChat(&ch);
+                            break;
+                        case DS_VOTE:
+                            ch.status=5;
+                            sprintf(ch.message, "%i", ds_vote);
+                            sendChat(&ch);
+                            break;
+                        case CHAT_LURK:
+                            ch.status=9;
+                            sprintf(ch.message, "Lurking...\nCtr-L to quit lurking\nCtrl-Q to quit program");
                             sendChat(&ch);
                             break;
                         default:
@@ -182,17 +198,25 @@ int main(int argc, char * argv[])
                             write_to_user_window(ch.id, ch.message);
                             break;
                         case 3:
-                            write_to_transcript(ch.message, 0);
+                            write_to_transcript(ch.message, 1);
                             break;
                         case 4:
+                            show_ds_window(ch.message);
                             break;
                         case 5:
+                            write_to_transcript(ch.message, 0);
                             break;
                         case 6:
+                            show_eject_window(ch.message);
                             break;
                         case 7:
+                            show_timeout_window(ch.message);
                             break;
-                    
+                        case 8:
+                            break;
+                        case 9:
+                            write_to_user_window(ch.id, ch.message);
+                            break;
                     }
                 }
 

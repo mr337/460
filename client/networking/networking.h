@@ -78,5 +78,5 @@ int getSock();
 //status bits: 6 - deep-size YOU GOT EJECTED
 //status buts: 7 - idle timeou
 //status bits: 8 - deep-six list of not voted  
-
+//status bits: 9 - lurk mode
 #endif
