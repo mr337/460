@@ -154,6 +154,11 @@ int main(int argc, char * argv[])
                             snprintf(ch.message,UNAMELENGTH+MESSAGELENGTH,"%s: %s",cI->userName,message_buffer);
                             sendChat(&ch);
                             break;
+                        case CHAT_GAUDY:
+                            ch.status=3;
+                            snprintf(ch.message,UNAMELENGTH+MESSAGELENGTH,"%s: %s",cI->userName,message_buffer);
+                            sendChat(&ch);
+                            break;
                         case DS_REQUEST:
                             ch.status=4;
                             strcpy(ch.message, "getlist");

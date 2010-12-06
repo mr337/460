@@ -15,6 +15,7 @@ typedef struct
 #define CHAT_BROADCAST 2
 #define CHAT_LURK 5 
 #define YELL 6
+#define CHAT_GAUDY 7
 #define DS_REQUEST 3
 #define DS_VOTE 4
 

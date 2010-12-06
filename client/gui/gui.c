@@ -16,6 +16,7 @@ CHAT_WINDOW d_win;
 int message_index = 0;
 int gaudy_on = 0;
 int deep_six_on = 0;
+int chat_contains_gaudy = 0;
 
 void write_line(char *message, int window_width, WINDOW *win)
 {
@@ -115,7 +116,6 @@ void write_to_user_window(int user_id, char * message)
                 lastBreak = lastSpace + 1;
                 i = lastSpace;                
             } else {
-                printf("Else");
                 line[lineCount][u_wins[user_id].w] = '0';
                 lastBreak = i + 1;
                 lastSpace = i;
@@ -400,7 +400,15 @@ int handle_chat_input(char input)
               wmove(e_win.window, 0,0);
               scrollok(e_win.window, 0);
               message_index = 0;        
-              return CHAT_BROADCAST;
+              if ( chat_contains_gaudy ) {
+                  chat_contains_gaudy = 0;
+                  gaudy_on = 0;
+                  wattroff(t_win.window, A_REVERSE);
+                  wattroff(e_win.window, A_REVERSE);
+                  return CHAT_GAUDY;
+              } else {
+                  return CHAT_BROADCAST;
+              }
           } else if ( input == CTRL_L ) {
               write_to_transcript("Lurk!", 0);
           } else if ( input == CTRL_P ) {
@@ -448,6 +456,7 @@ int handle_chat_input(char input)
               if ( gaudy_on == 0 ) { 
                   message_buffer[message_index++] = STX;
                   gaudy_on = 1;
+                  chat_contains_gaudy = 1;
                   wattron(e_win.window, A_REVERSE);
               } else {
                   message_buffer[message_index++] = ETX;
