@@ -12,8 +12,10 @@ CHAT_WINDOW p_win;
 CHAT_WINDOW s_win;
 CHAT_WINDOW e_win;
 CHAT_WINDOW u_wins[10];
+CHAT_WINDOW d_win;
 int message_index = 0;
 int gaudy_on = 0;
+int deep_six_on = 0;
 
 void write_line(char *message, int window_width, WINDOW *win)
 {
@@ -29,9 +31,7 @@ void write_to_transcript(char *message, int check_for_gaudy)
     while (scrollDown()) {
         scroll_transcript_down();
     } 
-           wscrl(t_win.window, 1);
-           wmove(t_win.window, getcury(t_win.window), 0);
-    count = updateTranscript(message_buffer);
+        count = updateTranscript(message_buffer);
     for ( i = 0; i < count; i++ ) {
         if ( check_for_gaudy == 0 ) {
            write_line(messages[i], t_win.w, t_win.window);
@@ -39,7 +39,9 @@ void write_to_transcript(char *message, int check_for_gaudy)
            int j;
            int len = strlen(messages[i]);
            int blank_space = t_win.w - len;
-          
+           wscrl(t_win.window, 1);
+           wmove(t_win.window, getcury(t_win.window), 0);
+     
            for ( j = 0; j < len; j++ ) {
                char input = messages[i][j];
                if ( input == STX ) {
@@ -263,6 +265,11 @@ void initialize_windows()
     e_win.window = newwin(e_win.h, e_win.w, e_win.y, e_win.x);
     e_win.color = 2;
 
+    d_win.w = 30;
+    d_win.h = 15;
+    d_win.x = 2;
+    d_win.y = 5;
+
     wcolor_set(t_win.window, t_win.color, NULL);
     wcolor_set(p_win.window, p_win.color, NULL);
     wcolor_set(s_win.window, s_win.color, NULL);
@@ -349,6 +356,32 @@ void write_to_status_window(char *message)
 
 int handle_input(char input)
 {
+    if ( deep_six_on == 0 ) {
+        return handle_chat_input(input);
+    } else {
+        touchwin(t_win.window);
+        wrefresh(t_win.window);
+        if ( input >= 48 && input <= 57) {
+           ds_vote = (int)input;
+           return DS_VOTE; 
+        }
+        deep_six_on = 0;
+        return -1;
+    }
+}
+
+void show_ds_window(char *message)
+{
+
+}
+
+void show_eject_window(char *message)
+{
+
+}
+
+int handle_chat_input(char input)
+{
     if (iscntrl(input))
     {
           if ( input == CTRL_Q )
@@ -357,9 +390,9 @@ int handle_input(char input)
           } else if ( input == ENTER ) {
               int count, i;
               werase(e_win.window);
-        write_line(" ", e_win.w, e_win.window);
-        wmove(e_win.window, 0,0);
-        scrollok(e_win.window, 0);
+              write_line(" ", e_win.w, e_win.window);
+              wmove(e_win.window, 0,0);
+              scrollok(e_win.window, 0);
 
               write_to_transcript(message_buffer, 1);
               message_buffer[0] = '\0';
@@ -414,6 +447,15 @@ int handle_input(char input)
                   gaudy_on = 0;
                   wattroff(e_win.window, A_REVERSE);
               }        
+          } else if ( input = CTRL_6 ) {
+              if ( d_win.window == NULL ) {
+                  d_win.window = newwin(d_win.h, d_win.w, d_win.y, d_win.x);
+              }
+              wclear(d_win.window);
+              wprintw(d_win.window, "Here be the list");
+              wrefresh(d_win.window);
+              deep_six_on = 1;
+              return DS_REQUEST;
           }
         }
 

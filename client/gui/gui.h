@@ -13,6 +13,10 @@ typedef struct
 #define CHAT_UPDATE 0
 #define CHAT_QUIT 1
 #define CHAT_BROADCAST 2
+#define CHAT_LURK 5 
+
+#define DS_REQUEST 3
+#define DS_VOTE 4
 
 #define CTRL_6 0x1E
 #define CTRL_RB 0x1D
@@ -42,11 +46,14 @@ void initialize_gui();
 void cleanup_gui();
 void scroll_transcript_down();
 int handle_input(char input);
+int handle_deepsix_input(char input);
+int handle_chat_input(char input);
 
 void write_to_user_window(int user_id, char * message);
 void write_to_program_window(char * message);
 void write_to_status_window(char * message);
 
 char message_buffer[MESSAGELENGTH];
+int ds_vote;
 
 #endif

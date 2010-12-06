@@ -27,7 +27,7 @@ void addNode(char * msg)
     else
     {
         struct tnode * tmp;
-        tmp = (struct tnode *) malloc(sizeof(struct tnode));
+        //tmp = (struct tnode *) malloc(sizeof(struct tnode));
         tmp = transhead;
         while(tmp->next != NULL)
         {
