@@ -166,7 +166,7 @@ int main(int argc, char * argv[])
                             break;
                         case CHAT_LURK:
                             ch.status=9;
-                            sprintf(ch.message, "Lurking...\nCtr-L to quit lurking\nCtrl-Q to quit program");
+                            sprintf(ch.message, "Lurking...");
                             sendChat(&ch);
                             break;
                         default:
@@ -201,13 +201,13 @@ int main(int argc, char * argv[])
                             write_to_transcript(ch.message, 1);
                             break;
                         case 4:
-                            //show_ds_window(ch.message);
+                            show_ds_window(ch.message);
                             break;
                         case 5:
                             write_to_transcript(ch.message, 0);
                             break;
                         case 6:
-                            //show_eject_window(ch.message);
+                            show_eject_window(ch.message);
                             break;
                         case 7:
                             //show_timeout_window(ch.message);

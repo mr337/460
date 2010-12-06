@@ -52,6 +52,8 @@ int handle_chat_input(char input);
 void write_to_user_window(int user_id, char * message);
 void write_to_program_window(char * message);
 void write_to_status_window(char * message);
+void show_ds_window(char * message);
+void show_eject_window(char * message);
 
 char message_buffer[MESSAGELENGTH];
 int ds_vote;
