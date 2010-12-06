@@ -169,6 +169,11 @@ int main(int argc, char * argv[])
                             sprintf(ch.message, "Lurking...");
                             sendChat(&ch);
                             break;
+                        case YELL:
+                            ch.status=10;
+                            sprintf(ch.message, "yelllist");
+                            sendChat(&ch);
+                            break;
                         default:
                             //other stuff not defined yet
                             break;
@@ -216,6 +221,9 @@ int main(int argc, char * argv[])
                             break;
                         case 9:
                             write_to_user_window(ch.id, ch.message);
+                            break;
+                        case 10:
+                            write_to_transcript(ch.message, 0);
                             break;
                     }
                 }
