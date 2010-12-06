@@ -9,6 +9,7 @@
 
 long sentBytes;
 long recvBytes;
+int errors;
 
 typedef struct
 {

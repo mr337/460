@@ -44,6 +44,7 @@ int connectToServer(char * ipAddress, int port)
     //set vars
     sentBytes=0;
     recvBytes=0;
+    errors=0;
 
     return connStatus;
 }
@@ -87,6 +88,7 @@ int sendChat(Chat * ch)
     if(!size)
     {
         printw("Error serializing struct\n");
+        errors++;
         free(sChat);
         return 0;
     }
@@ -107,6 +109,7 @@ int receiveChat(Chat * ch)
     if(recv(sock,tmpRecv,5,0)!=5)
     {
         printw("Error receving string size\n");
+        errors++;
         refresh();
         return 0;
     }
@@ -114,6 +117,7 @@ int receiveChat(Chat * ch)
     if(tmpRecv[0] != '!')
     {
         printw("Recv message did not start with proper marker\n");
+        errors++;
         refresh();
         return 0;
     }

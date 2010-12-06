@@ -416,7 +416,7 @@ int checkDupUserName(char * name)
 void addMessage(char * msg)
 {
     //add to linked list
-    printf("Added to global message: %s\n",msg);
+    //printf("Added to global message: %s\n",msg);
     addNode(msg);
 }
 
