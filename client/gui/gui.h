@@ -56,7 +56,7 @@ void write_to_program_window(char * message);
 void write_to_status_window(char * message);
 void show_ds_window(char * message);
 void show_eject_window(char * message);
-void show_lurk_window(char *message);
+void show_lurk_window();
 
 char message_buffer[MESSAGELENGTH];
 int response_code; 

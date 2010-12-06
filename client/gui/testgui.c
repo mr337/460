@@ -15,8 +15,8 @@ int main(int argc, char *argv[])
            case CHAT_QUIT:
               q = 1;
               break;
-           case CHAT_BROADCAST:
-              show_eject_window("You're outta here!");
+           case CHAT_LURK:
+              show_lurk_window();
               break;
            default: 
             write_to_user_window(0, message_buffer);
