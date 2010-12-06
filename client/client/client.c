@@ -139,9 +139,21 @@ int main(int argc, char * argv[])
                     switch(handle_input(getch()))
                     {
                         case CHAT_QUIT:
+                            //send server quit message
+                            //chat saying BYE
+                            //and blank message to clear window
+                            ch.status=2;
+                            strcpy(ch.message,"  ");
+                            sendChat(&ch);
+
+                            ch.status=0;
+                            sprintf(ch.message,"%s left the chat.",cI->userName);
+                            sendChat(&ch);
+
                             ch.status=1;
                             strcpy(ch.message,"QUITING");
                             sendChat(&ch);
+                            
                             q=1; //bit to quit
                             break;
                         case CHAT_UPDATE:
