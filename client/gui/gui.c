@@ -13,9 +13,16 @@ CHAT_WINDOW s_win;
 CHAT_WINDOW e_win;
 CHAT_WINDOW u_wins[10];
 CHAT_WINDOW d_win;
+
+enum CHATMODE {
+    normal,
+    gaudy,
+    deepsix,
+    lurk,
+    ejected,
+    yell
+} chat_mode = normal;
 int message_index = 0;
-int gaudy_on = 0;
-int deep_six_on = 0;
 int chat_contains_gaudy = 0;
 
 void touch_screen()
@@ -372,17 +379,21 @@ void write_to_status_window(char *message)
 
 int handle_input(char input)
 {
-    if ( deep_six_on == 0 ) {
+    if ( chat_mode == normal ) {
         return handle_chat_input(input);
-    } else {
+    } else if (chat_mode == deepsix) {
         touch_screen();
         if ( input >= 48 && input <= 57) {
            response_code = (int)input;
            return DS_VOTE; 
         }
-        deep_six_on = 0;
+        chat_mode = normal; 
         return -1;
-    }
+    } else if (chat_mode == ejected) {
+        touch_screen();
+        return CHAT_QUIT;
+    }  else
+        return -1;
 }
 
 void show_ds_window(char *message)
@@ -393,12 +404,15 @@ void show_ds_window(char *message)
     wclear(d_win.window);
     wprintw(d_win.window, message);
     wrefresh(d_win.window);
-    deep_six_on = 1;
+    chat_mode = deepsix; 
 }
 
 void show_eject_window(char *message)
 {
-
+    WINDOW *ewin = newwin(10, 40, 7, 20);
+    wprintw(ewin, message);
+    wrefresh(ewin);
+    chat_mode = ejected;
 }
 
 int handle_chat_input(char input)
@@ -409,6 +423,9 @@ int handle_chat_input(char input)
           {
               return CHAT_QUIT;
           } else if ( input == ENTER ) {
+              if ( message_index == 0 ) {
+                  return -1;
+              }
               werase(e_win.window);
               write_line(" ", e_win.w, e_win.window);
               wmove(e_win.window, 0,0);
@@ -416,7 +433,7 @@ int handle_chat_input(char input)
               message_index = 0;        
               if ( chat_contains_gaudy ) {
                   chat_contains_gaudy = 0;
-                  gaudy_on = 0;
+                  chat_mode = gaudy;
                   wattroff(t_win.window, A_REVERSE);
                   wattroff(e_win.window, A_REVERSE);
                   return CHAT_GAUDY;
@@ -467,14 +484,14 @@ int handle_chat_input(char input)
               }
                                         
           } else if ( input == CTRL_G ) {        
-              if ( gaudy_on == 0 ) { 
+              if ( chat_mode == normal ) { 
                   message_buffer[message_index++] = STX;
-                  gaudy_on = 1;
+                  chat_mode = gaudy; 
                   chat_contains_gaudy = 1;
                   wattron(e_win.window, A_REVERSE);
               } else {
                   message_buffer[message_index++] = ETX;
-                  gaudy_on = 0;
+                  chat_mode = normal;
                   wattroff(e_win.window, A_REVERSE);
               }        
           } else if ( input == CTRL_6 ) {
