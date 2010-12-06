@@ -36,8 +36,6 @@ sem_t lmessage;
 int main(int argc, char *argv[])
 {
 
-    //char master_array[maxUsers];
-
     if(argc != 4)
     {
         printf("Must be in format: server port Max_Clients MaxIdle_Minutes\n");
@@ -257,17 +255,16 @@ void* thread_proc(void *arg)
             default:
                 if(FD_ISSET(sock,&tmpfds))
                 {
+                    //move to static array for speed
                     Chat * ch = (Chat *)malloc(sizeof(Chat));
+                    char * sChat = malloc(1500);
+                    char * token = malloc(1500);
 
                     //get size then serialized data
-                    int recvSize = 0;
-                    recv(sock,&recvSize, sizeof(int),0);
-                    send(sock, &recvSize, sizeof(int),0);
-                    char * sChat = malloc(recvSize);
-                    char * token = malloc(recvSize);
-                    if(!recv(sock, sChat, recvSize,0))
+                    recv(sock,sChat,5,0); 
+                    if(sChat[0] != '!')
                     {
-                        printf("Error reading chat serialization, use id:%i\n",id);
+                        printf("Recv message did not start with proper marker\n");
                         errors++;
 
 
@@ -281,6 +278,10 @@ void* thread_proc(void *arg)
                         }
                         continue;
                     }
+
+
+                    int sizeToRecv = atoi(sChat+1);
+                    recv(sock,sChat,sizeToRecv,0);
 
 
                     time(&lastSeen);
@@ -319,7 +320,8 @@ void* thread_proc(void *arg)
                     free(sChat);
                 }
 
-                char * chatMsg = malloc(UNAMELENGTH+MESSAGELENGTH); 
+                char * chatMsg = malloc(UNAMELENGTH+MESSAGELENGTH+5); 
+                char * tmpSend = malloc(UNAMELENGTH+MESSAGELENGTH+5); 
                 sem_wait(&lmessage);
                 
                 if(!getMessage(id,chatMsg))
@@ -341,14 +343,25 @@ void* thread_proc(void *arg)
 
                 sem_post(&lmessage);
 
-                int recvSize = strlen(chatMsg)+1;
-                send(sock, &recvSize,sizeof(int),0);
-                recv(sock, &recvSize,sizeof(int),0);
-                recvSize = send(sock,chatMsg,recvSize,0);
-                
+                int sent = 0;
+                int targetSent = 0 ;
+    
+                snprintf(tmpSend,strlen(chatMsg)+5+1,"!%4d%s",(int)strlen(chatMsg),chatMsg); 
+               
+                targetSent = strlen(tmpSend);  
+                send(sock,tmpSend,targetSent-sent,0);
+
+
+                //if sents start getting garbles uncomment below
+                //while(sent < targetSent)
+                //{
+                //    sent += send(sock,tmpSend,targetSent-sent,0); 
+                //}
+
                 printf("USER %s:%s\n",name,chatMsg);   
 
                 free(chatMsg);
+                free(tmpSend);
         }
 
 
@@ -403,7 +416,7 @@ int checkDupUserName(char * name)
 void addMessage(char * msg)
 {
     //add to linked list
-    //printf("Added to global message: %s\n",msg);
+    printf("Added to global message: %s\n",msg);
     addNode(msg);
 }
 

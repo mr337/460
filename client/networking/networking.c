@@ -13,6 +13,9 @@
 int connStatus;
 int sock;
 
+char tmpSend[1500];
+char tmpRecv[1500];
+
 int connectToServer(char * ipAddress, int port)
 {
     struct sockaddr_in sAddr;
@@ -76,9 +79,11 @@ int getACK(ConnectACK * cACK)
 }
 
 int sendChat(Chat * ch)
-{
+{//0 ERROR , 1 good
+    memset(tmpSend,0,1500);
     char * sChat = (char*)malloc(1000);
-    int size = serializeChat(sChat, ch);
+    //int size = serializeChat(sChat, ch);
+    int size = serializeChat(tmpSend, ch);
     if(!size)
     {
         printw("Error serializing struct\n");
@@ -87,33 +92,39 @@ int sendChat(Chat * ch)
     }
     else
     {//send size of string and them data
-        //printw("MSG: %s of size: %i\n",sChat,size);
-        //refresh();
-        int recvSize = 0;
-        sentBytes += send(sock,&size,sizeof(int),0);
-        recvBytes += recv(sock, &recvSize, sizeof(int),0);
-        recvSize = send(sock,sChat, size,0);
-        recvBytes += recvSize;
+        size = snprintf(sChat,size+5+1,"!%4d%s",(int)strlen(tmpSend),tmpSend);
+        sentBytes += send(sock,sChat,size,0);
         free(sChat);
-        return recvSize;
+        return 1;
     }
 }
 
 int receiveChat(Chat * ch)
 {
-    int recvSize = 0;
-    recvBytes += recv(sock, &recvSize, sizeof(int),0);
-    sentBytes += send(sock,&recvSize,sizeof(int),0);
-    char * sChat = malloc(recvSize);
-    int tmpRecvSize = recv(sock, sChat,recvSize,0);
-    if(!tmpRecvSize)
+    
+    memset(tmpRecv,0,1500);
+
+    if(recv(sock,tmpRecv,5,0)!=5)
     {
-        return 2; //something wrong
+        printw("Error receving string size\n");
+        refresh();
+        return 0;
     }
 
-    recvBytes += tmpRecvSize;
+    if(tmpRecv[0] != '!')
+    {
+        printw("Recv message did not start with proper marker\n");
+        refresh();
+        return 0;
+    }
 
-    deserializeChat(sChat,ch);
+    recvBytes += 5;
+
+    int sizeToRecv = atoi(tmpRecv+1);
+    memset(tmpRecv,0,1500);
+    recvBytes += recv(sock,tmpRecv,sizeToRecv,0);
+
+    deserializeChat(tmpRecv,ch);
     return 0; //no errors    
 }
 
