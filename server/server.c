@@ -285,7 +285,7 @@ void* thread_proc(void *arg)
 
 
                     time(&lastSeen);
-                    strcpy(token,sChat);
+                    strncpy(token,sChat,sizeToRecv+1);
 
                     char * delim = strtok(token,"`");
                     //ch->id = atoi(delim);
@@ -416,7 +416,6 @@ int checkDupUserName(char * name)
 void addMessage(char * msg)
 {
     //add to linked list
-    //printf("Added to global message: %s\n",msg);
     addNode(msg);
 }
 

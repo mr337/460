@@ -65,7 +65,7 @@ int main(int argc, char * argv[])
     refresh();
 
     //connecto to server
-    connectToServer(ip,5000);
+    connectToServer(ip,5001);
     if(isConnected()!= 1)
     {
         printw("\nFailed to connect to server.\n");

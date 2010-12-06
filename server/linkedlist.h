@@ -4,7 +4,7 @@
 #define linkedlist
 struct node
 {
-    char message[UNAMELENGTH+MESSAGELENGTH+5];
+    char message[UNAMELENGTH+MESSAGELENGTH+6];
     struct node *next;
 };
 
