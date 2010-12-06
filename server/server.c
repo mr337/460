@@ -306,7 +306,7 @@ void* thread_proc(void *arg)
                     delim = strtok(NULL,"`");
                     delim = strtok(NULL,"`");
 
-                    printf("Token:%s    Sizeof:%i\n",delim,(int)strlen(delim));
+                    //printf("Token:%s    Sizeof:%i\n",delim,(int)strlen(delim));
 
                     //if chat status is 1, the user is quiting
                     if(ch->status == SB_QUIT)
@@ -322,9 +322,17 @@ void* thread_proc(void *arg)
                     //    free(sChat);
                     //    continue;
                     //}
-                    else if(ch->status == SB_KEYBOARDUPDATE )
+                    else if(ch->status == SB_KEYBOARDUPDATE && strcmp(delim,"  ") != 0)
                     {
                         //printf("Size of message: %i  %s\n",(int)strlen(&token),token);
+                        int strSize = strlen(delim);
+                        printf("Size of delim is %i\n",strSize);
+                        if(strSize < 40)
+                        {
+                            memset(token,0,60);
+                            memset(token,32,40-strSize);
+                            strcat(sChat,token);
+                        }
 
 
                         memset(token,0,1500);
