@@ -16,6 +16,22 @@ CHAT_WINDOW d_win;
 int message_index = 0;
 int gaudy_on = 0;
 int deep_six_on = 0;
+int chat_contains_gaudy = 0;
+
+void touch_screen()
+{
+    int i;
+    touchwin(t_win.window);
+    touchwin(p_win.window);
+    touchwin(s_win.window);
+    wrefresh(t_win.window);
+    wrefresh(p_win.window);
+    wrefresh(s_win.window);
+    for ( i = 0; i < 10; i++ ) {
+        touchwin(u_wins[i].window);
+        wrefresh(u_wins[i].window);
+    }
+}
 
 void write_line(char *message, int window_width, WINDOW *win)
 {
@@ -84,38 +100,38 @@ void write_to_user_window(int user_id, char * message)
     int len = strlen(message);
     int lineCount = 0;
     int gaudy_found = 0;
-    char line[(MESSAGELENGTH / u_wins[user_id].w) + 1][u_wins[user_id].w];
+    char line[(MESSAGELENGTH / u_wins[user_id].w) + 1][u_wins[user_id].w + 1];
  
     //scrollok(u_wins[user_id].window, 0);
     wclear(u_wins[user_id].window);
     wbkgd(u_wins[user_id].window, COLOR_PAIR(u_wins[user_id].color)); 
     wrefresh(u_wins[user_id].window);
 
-    for ( i = 0; i < len; i++ )
+    for ( i = 0; i <= len; i++ )
     {
         if ( len > 0 ) {
             if ( message[i] == ' ' ) {
                 lastSpace = i;
             }
+            line[lineCount][i - lastBreak] = message[i];
         }
 
         if ( message[i] == STX ) {
             gaudy_found = 1;
         }
 
-        line[lineCount][i - lastBreak] = message[i];
         if ( i == len - 1 ) {
-            line[lineCount][i+1] = '\0';
+            line[lineCount][i - lastBreak + 1] = '\0';
             lineCount++; 
             lastBreak = i;
-            lastSpace = i;
+            lastSpace = i;    
         } else if ( (i - lastBreak) == u_wins[user_id].w - 1 ) {
             if ( lastSpace > lastBreak ) {
                 line[lineCount][lastSpace - lastBreak] = '\0';
                 lastBreak = lastSpace + 1;
-                i = lastSpace;
+                i = lastSpace;                
             } else {
-                line[lineCount][u_wins[user_id].w] = '\0';
+                line[lineCount][u_wins[user_id].w] = '0';
                 lastBreak = i + 1;
                 lastSpace = i;
             }
@@ -138,7 +154,7 @@ void write_to_user_window(int user_id, char * message)
         wprintw(u_wins[user_id].window, line[i]);
         j++;
       }
-    } else {
+    } else { 
       int k;
       for ( i = 0; i < lineCount; i++ ) { 
         if ( i >= lineCount - 3) {
@@ -267,7 +283,7 @@ void initialize_windows()
 
     d_win.w = 30;
     d_win.h = 15;
-    d_win.x = 2;
+    d_win.x = 25;
     d_win.y = 5;
 
     wcolor_set(t_win.window, t_win.color, NULL);
@@ -359,10 +375,9 @@ int handle_input(char input)
     if ( deep_six_on == 0 ) {
         return handle_chat_input(input);
     } else {
-        touchwin(t_win.window);
-        wrefresh(t_win.window);
+        touch_screen();
         if ( input >= 48 && input <= 57) {
-           ds_vote = (int)input;
+           response_code = (int)input;
            return DS_VOTE; 
         }
         deep_six_on = 0;
@@ -372,7 +387,13 @@ int handle_input(char input)
 
 void show_ds_window(char *message)
 {
-
+    if ( d_win.window == NULL ) {
+        d_win.window = newwin(d_win.h, d_win.w, d_win.y, d_win.x);
+    }
+    wclear(d_win.window);
+    wprintw(d_win.window, message);
+    wrefresh(d_win.window);
+    deep_six_on = 1;
 }
 
 void show_eject_window(char *message)
@@ -392,13 +413,18 @@ int handle_chat_input(char input)
               write_line(" ", e_win.w, e_win.window);
               wmove(e_win.window, 0,0);
               scrollok(e_win.window, 0);
-
-              //write_to_transcript(message_buffer, 1);
-              //message_buffer[0] = '\0';
               message_index = 0;        
-              return CHAT_BROADCAST;
+              if ( chat_contains_gaudy ) {
+                  chat_contains_gaudy = 0;
+                  gaudy_on = 0;
+                  wattroff(t_win.window, A_REVERSE);
+                  wattroff(e_win.window, A_REVERSE);
+                  return CHAT_GAUDY;
+              } else {
+                  return CHAT_BROADCAST;
+              }
           } else if ( input == CTRL_L ) {
-              write_to_transcript("Lurk!", 0);
+              return CHAT_LURK;
           } else if ( input == CTRL_P ) {
               if ( scrollUp() == 1) {
                 wscrl(t_win.window, -1);
@@ -433,13 +459,18 @@ int handle_chat_input(char input)
                                  e_win.w, e_win.window);
                      }
                      wmove(e_win.window, 0, newx);
-                     wrefresh(e_win.window);
                   }
-              }               
+              }
+              wrefresh(e_win.window);
+              if ( message_index <= 0 ) {
+                  return -1;
+              }
+                                        
           } else if ( input == CTRL_G ) {        
               if ( gaudy_on == 0 ) { 
                   message_buffer[message_index++] = STX;
                   gaudy_on = 1;
+                  chat_contains_gaudy = 1;
                   wattron(e_win.window, A_REVERSE);
               } else {
                   message_buffer[message_index++] = ETX;
@@ -447,14 +478,7 @@ int handle_chat_input(char input)
                   wattroff(e_win.window, A_REVERSE);
               }        
           } else if ( input == CTRL_6 ) {
-              if ( d_win.window == NULL ) {
-                  d_win.window = newwin(d_win.h, d_win.w, d_win.y, d_win.x);
-              }
-              wclear(d_win.window);
-              wprintw(d_win.window, "Here be the list");
-              wrefresh(d_win.window);
-              deep_six_on = 1;
-              return DS_REQUEST;
+                            return DS_REQUEST;
           }
         }
 
@@ -481,21 +505,6 @@ int handle_chat_input(char input)
     
     //return CHAT_BROADCAST;
     return CHAT_UPDATE;
-}
-
-void draw_main_interface()
-{
-    initialize_windows();
-    write_to_program_window("This is\nA Test\nand junk");
-    write_to_status_window("This is\nThe Status Window\nYay");
-    write_to_user_window(0, "This is a test of writing to the user window and i hope this works");
-    write_to_user_window(0, "Abba");
-    while ( 1 )
-    {
-        char input = wgetch(e_win.window);    
-        if (handle_input(input) == CHAT_QUIT)
-            break;
-    }
 }
 
 void scroll_transcript_down()

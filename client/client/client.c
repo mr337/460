@@ -154,6 +154,11 @@ int main(int argc, char * argv[])
                             snprintf(ch.message,UNAMELENGTH+MESSAGELENGTH,"%s: %s",cI->userName,message_buffer);
                             sendChat(&ch);
                             break;
+                        case CHAT_GAUDY:
+                            ch.status=3;
+                            snprintf(ch.message,UNAMELENGTH+MESSAGELENGTH,"%s: %s",cI->userName,message_buffer);
+                            sendChat(&ch);
+                            break;
                         case DS_REQUEST:
                             ch.status=4;
                             strcpy(ch.message, "getlist");
@@ -161,12 +166,17 @@ int main(int argc, char * argv[])
                             break;
                         case DS_VOTE:
                             ch.status=5;
-                            sprintf(ch.message, "%i", ds_vote);
+                            sprintf(ch.message, "%i", response_code);
                             sendChat(&ch);
                             break;
                         case CHAT_LURK:
                             ch.status=9;
-                            sprintf(ch.message, "Lurking...\nCtr-L to quit lurking\nCtrl-Q to quit program");
+                            sprintf(ch.message, "Lurking...");
+                            sendChat(&ch);
+                            break;
+                        case YELL:
+                            ch.status=10;
+                            sprintf(ch.message, "yelllist");
                             sendChat(&ch);
                             break;
                         default:
@@ -201,13 +211,13 @@ int main(int argc, char * argv[])
                             write_to_transcript(ch.message, 1);
                             break;
                         case 4:
-                            //show_ds_window(ch.message);
+                            show_ds_window(ch.message);
                             break;
                         case 5:
                             write_to_transcript(ch.message, 0);
                             break;
                         case 6:
-                            //show_eject_window(ch.message);
+                            show_eject_window(ch.message);
                             break;
                         case 7:
                             //show_timeout_window(ch.message);
@@ -216,6 +226,9 @@ int main(int argc, char * argv[])
                             break;
                         case 9:
                             write_to_user_window(ch.id, ch.message);
+                            break;
+                        case 10:
+                            write_to_transcript(ch.message, 0);
                             break;
                     }
                 }

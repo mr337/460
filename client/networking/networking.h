@@ -79,4 +79,5 @@ int getSock();
 //status buts: 7 - idle timeou
 //status bits: 8 - deep-six list of not voted  
 //status bits: 9 - lurk mode
+//status bits: 10- yell mode
 #endif
