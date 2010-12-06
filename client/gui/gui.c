@@ -25,6 +25,14 @@ enum CHATMODE {
 int message_index = 0;
 int chat_contains_gaudy = 0;
 
+void clear_buffer() {
+    int i;
+    for ( i = 0; i < MESSAGELENGTH; i++ ) {
+        message_buffer[i] = '\0';
+    }
+    message_index = 0;
+}
+
 void touch_screen()
 {
     int i;

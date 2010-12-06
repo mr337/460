@@ -60,5 +60,6 @@ void show_lurk_window();
 
 char message_buffer[MESSAGELENGTH];
 int response_code; 
+void clear_buffer();
 
 #endif
