@@ -17,7 +17,6 @@ int gaudy_on = 0;
 
 void write_line(char *message, int window_width, WINDOW *win)
 {
-    //wprintw(win, " ");
     wscrl(win, 1);
     wmove(win, getcury(win), 0);
     write_to_window(message, window_width, win);
@@ -30,6 +29,8 @@ void write_to_transcript(char *message, int check_for_gaudy)
     while (scrollDown()) {
         scroll_transcript_down();
     } 
+           wscrl(t_win.window, 1);
+           wmove(t_win.window, getcury(t_win.window), 0);
     count = updateTranscript(message_buffer);
     for ( i = 0; i < count; i++ ) {
         if ( check_for_gaudy == 0 ) {
@@ -37,18 +38,37 @@ void write_to_transcript(char *message, int check_for_gaudy)
         } else {
            int j;
            int len = strlen(messages[i]);
-           wscrl(t_win.window, 1);
-           wmove(t_win.window, getcury(t_win.window), 0);
+           int blank_space = t_win.w - len;
+          
            for ( j = 0; j < len; j++ ) {
                char input = messages[i][j];
                if ( input == STX ) {
+                   blank_space++;
                    wattron(t_win.window, A_REVERSE);
                } else if (input == ETX) {
+                   blank_space++;
                    wattroff(t_win.window, A_REVERSE);
-               } else {
+               } else if (input != '\0') {
                    waddch(t_win.window, input);
+               } else {
+                   break;
                }
-            }        
+           }        
+
+           if ( blank_space <= 0 ) {
+               scrollok(t_win.window, 0);
+            }
+
+           if ( blank_space > 0 )
+           {
+               int k;
+               for (k = 0 ; k < blank_space - 1 ; k++ ) {
+                  wprintw(t_win.window, " ");
+               }              
+               scrollok(t_win.window, 0); //Turn off scrolling to pad out the line
+               wprintw(t_win.window, " ");
+           }            
+           scrollok(t_win.window, 1);
         }
     }
     wrefresh(t_win.window);
@@ -85,7 +105,6 @@ void write_to_user_window(int user_id, char * message)
         } else if ( (i - lastBreak) == u_wins[user_id].w - 1 ) {
             if ( lastSpace > lastBreak ) {
                 line[lineCount][lastSpace - lastBreak] = '\0';
-
                 lastBreak = lastSpace + 1;
                 i = lastSpace;
             } else {
@@ -329,10 +348,9 @@ int handle_input(char input)
         wmove(e_win.window, 0,0);
         scrollok(e_win.window, 0);
 
-              return CHAT_UPDATE;
-       //       write_to_transcript(message_buffer, 1);
-                 //           write_to_user_window(3, "Test");            
-        //      message_buffer[0] = '\0';
+         //     return CHAT_UPDATE;
+              write_to_transcript(message_buffer, 1);
+              message_buffer[0] = '\0';
               message_index = 0;        
           } else if ( input == CTRL_L ) {
               write_to_transcript("Lurk!", 0);
