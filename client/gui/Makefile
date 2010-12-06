@@ -6,7 +6,7 @@ OBJS = testgui.c gui.c transcriptlist.c
 LIBS = -lcurses
 
 all: $(OBJS)
-	$(CC) $(CFALGS) -o $(BIN) $(OBJS) $(LIBS)
+	$(CC) $(CFLAGS) -o $(BIN) $(OBJS) $(LIBS)
 
 clean:
 	rm $(BIN) 

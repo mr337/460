@@ -31,7 +31,7 @@ void write_to_transcript(char *message, int check_for_gaudy)
     while (scrollDown()) {
         scroll_transcript_down();
     } 
-        count = updateTranscript(message_buffer);
+        count = updateTranscript(message);
     for ( i = 0; i < count; i++ ) {
         if ( check_for_gaudy == 0 ) {
            write_line(messages[i], t_win.w, t_win.window);
@@ -388,7 +388,6 @@ int handle_chat_input(char input)
           {
               return CHAT_QUIT;
           } else if ( input == ENTER ) {
-              int count, i;
               werase(e_win.window);
               write_line(" ", e_win.w, e_win.window);
               wmove(e_win.window, 0,0);
@@ -447,7 +446,7 @@ int handle_chat_input(char input)
                   gaudy_on = 0;
                   wattroff(e_win.window, A_REVERSE);
               }        
-          } else if ( input = CTRL_6 ) {
+          } else if ( input == CTRL_6 ) {
               if ( d_win.window == NULL ) {
                   d_win.window = newwin(d_win.h, d_win.w, d_win.y, d_win.x);
               }
@@ -469,6 +468,7 @@ int handle_chat_input(char input)
               message_buffer[message_index] = '\0';            
               if ( message_index < 80 || getcurx(e_win.window) < e_win.w - 1 ) {
                   waddch(e_win.window, input);
+                  wrefresh(e_win.window);
               } else {
                   scrollok(e_win.window, 1);
                   wmove(e_win.window, e_win.y, 0);

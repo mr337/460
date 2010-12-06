@@ -201,16 +201,16 @@ int main(int argc, char * argv[])
                             write_to_transcript(ch.message, 1);
                             break;
                         case 4:
-                            show_ds_window(ch.message);
+                            //show_ds_window(ch.message);
                             break;
                         case 5:
                             write_to_transcript(ch.message, 0);
                             break;
                         case 6:
-                            show_eject_window(ch.message);
+                            //show_eject_window(ch.message);
                             break;
                         case 7:
-                            show_timeout_window(ch.message);
+                            //show_timeout_window(ch.message);
                             break;
                         case 8:
                             break;
