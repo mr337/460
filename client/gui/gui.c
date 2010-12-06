@@ -18,6 +18,21 @@ int gaudy_on = 0;
 int deep_six_on = 0;
 int chat_contains_gaudy = 0;
 
+void touch_screen()
+{
+    int i;
+    touchwin(t_win.window);
+    touchwin(p_win.window);
+    touchwin(s_win.window);
+    wrefresh(t_win.window);
+    wrefresh(p_win.window);
+    wrefresh(s_win.window);
+    for ( i = 0; i < 10; i++ ) {
+        touchwin(u_wins[i].window);
+        wrefresh(u_wins[i].window);
+    }
+}
+
 void write_line(char *message, int window_width, WINDOW *win)
 {
     wscrl(win, 1);
@@ -268,7 +283,7 @@ void initialize_windows()
 
     d_win.w = 30;
     d_win.h = 15;
-    d_win.x = 2;
+    d_win.x = 25;
     d_win.y = 5;
 
     wcolor_set(t_win.window, t_win.color, NULL);
@@ -360,10 +375,9 @@ int handle_input(char input)
     if ( deep_six_on == 0 ) {
         return handle_chat_input(input);
     } else {
-        touchwin(t_win.window);
-        wrefresh(t_win.window);
+        touch_screen();
         if ( input >= 48 && input <= 57) {
-           ds_vote = (int)input;
+           response_code = (int)input;
            return DS_VOTE; 
         }
         deep_six_on = 0;
@@ -410,7 +424,7 @@ int handle_chat_input(char input)
                   return CHAT_BROADCAST;
               }
           } else if ( input == CTRL_L ) {
-              write_to_transcript("Lurk!", 0);
+              return CHAT_LURK;
           } else if ( input == CTRL_P ) {
               if ( scrollUp() == 1) {
                 wscrl(t_win.window, -1);

@@ -166,7 +166,7 @@ int main(int argc, char * argv[])
                             break;
                         case DS_VOTE:
                             ch.status=5;
-                            sprintf(ch.message, "%i", ds_vote);
+                            sprintf(ch.message, "%i", response_code);
                             sendChat(&ch);
                             break;
                         case CHAT_LURK:
