@@ -105,7 +105,6 @@ void write_to_user_window(int user_id, char * message)
         }
 
         if ( i == len - 1 ) {
-            printf("0 put line:%d char:%d", lineCount, i+1);
             line[lineCount][i - lastBreak + 1] = '\0';
             lineCount++; 
             lastBreak = i;
@@ -113,8 +112,6 @@ void write_to_user_window(int user_id, char * message)
         } else if ( (i - lastBreak) == u_wins[user_id].w - 1 ) {
             if ( lastSpace > lastBreak ) {
                 line[lineCount][lastSpace - lastBreak] = '\0';
-                printf("0 put at line:%d char:%d", lineCount,lastSpace - lastBreak);
-                printf(" sp:%d br:%d", lastSpace, lastBreak);
                 lastBreak = lastSpace + 1;
                 i = lastSpace;                
             } else {
