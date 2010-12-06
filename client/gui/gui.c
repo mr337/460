@@ -351,10 +351,10 @@ int handle_input(char input)
         wmove(e_win.window, 0,0);
         scrollok(e_win.window, 0);
 
-              write_to_transcript(message_buffer, 1);
-              message_buffer[0] = '\0';
-              return CHAT_BROADCAST;
+        //      write_to_transcript(message_buffer, 1);
+         //     message_buffer[0] = '\0';
               message_index = 0;        
+              return CHAT_BROADCAST;
           } else if ( input == CTRL_L ) {
               write_to_transcript("Lurk!", 0);
           } else if ( input == CTRL_P ) {
