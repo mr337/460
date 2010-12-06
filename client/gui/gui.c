@@ -83,7 +83,12 @@ void write_to_user_window(int user_id, char * message)
     int lineCount = 0;
     int gaudy_found = 0;
     char line[(MESSAGELENGTH / u_wins[user_id].w) + 1][u_wins[user_id].w];
-    
+ 
+    //scrollok(u_wins[user_id].window, 0);
+    wclear(u_wins[user_id].window);
+    wbkgd(u_wins[user_id].window, COLOR_PAIR(u_wins[user_id].color)); 
+    wrefresh(u_wins[user_id].window);
+
     for ( i = 0; i < len; i++ )
     {
         if ( len > 0 ) {
@@ -235,29 +240,33 @@ void initialize_windows()
     t_win.x = 0;
     t_win.y = 0; 
     t_win.window = newwin(t_win.h, t_win.w, t_win.y, t_win.x);
+    t_win.color = 1;
 
     p_win.w = 40;
     p_win.h = 3;
     p_win.x = 40;
     p_win.y = 0;
     p_win.window = newwin(p_win.h, p_win.w, p_win.y, p_win.x);
+    p_win.color = 2;
 
     s_win.w = 40;
     s_win.h = 3;
     s_win.x = 40;
     s_win.y = 20;
     s_win.window = newwin(s_win.h, s_win.w, s_win.y, s_win.x);
+    s_win.color = 3;
 
     e_win.w = 80;
     e_win.h = 1;
     e_win.x = 0;
     e_win.y = 23;
     e_win.window = newwin(e_win.h, e_win.w, e_win.y, e_win.x);
+    e_win.color = 2;
 
-    wcolor_set(t_win.window, 1, NULL);
-    wcolor_set(p_win.window, 2, NULL);
-    wcolor_set(s_win.window, 3, NULL);
-    wcolor_set(e_win.window, 2, NULL);
+    wcolor_set(t_win.window, t_win.color, NULL);
+    wcolor_set(p_win.window, p_win.color, NULL);
+    wcolor_set(s_win.window, s_win.color, NULL);
+    wcolor_set(e_win.window, e_win.color, NULL);
 
     initialize_window(t_win.window, t_win.h, t_win.w);
     initialize_window(p_win.window, p_win.h, p_win.w);
@@ -281,6 +290,7 @@ void initialize_windows()
                                           u_wins[index].w,
                                           u_wins[index].y,
                                           u_wins[index].x);
+            u_wins[index].color = color;
 
             wcolor_set(u_wins[index].window, color, NULL);
             initialize_window(u_wins[index].window,
@@ -351,8 +361,8 @@ int handle_input(char input)
         wmove(e_win.window, 0,0);
         scrollok(e_win.window, 0);
 
-        //      write_to_transcript(message_buffer, 1);
-         //     message_buffer[0] = '\0';
+              write_to_transcript(message_buffer, 1);
+              message_buffer[0] = '\0';
               message_index = 0;        
               return CHAT_BROADCAST;
           } else if ( input == CTRL_L ) {
@@ -398,9 +408,11 @@ int handle_input(char input)
               if ( gaudy_on == 0 ) { 
                   message_buffer[message_index++] = STX;
                   gaudy_on = 1;
+                  wattron(e_win.window, A_REVERSE);
               } else {
                   message_buffer[message_index++] = ETX;
                   gaudy_on = 0;
+                  wattroff(e_win.window, A_REVERSE);
               }        
           }
         }
@@ -434,7 +446,8 @@ void draw_main_interface()
     initialize_windows();
     write_to_program_window("This is\nA Test\nand junk");
     write_to_status_window("This is\nThe Status Window\nYay");
-    write_to_user_window(0, "This is a test \x02of writing to the user window and\x03 i hope this works");
+    write_to_user_window(0, "This is a test of writing to the user window and i hope this works");
+    write_to_user_window(0, "Abba");
     while ( 1 )
     {
         char input = wgetch(e_win.window);    

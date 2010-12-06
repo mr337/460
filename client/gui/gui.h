@@ -7,6 +7,7 @@ typedef struct
 {
     WINDOW *window;
     int w, h, x, y;
+    chtype color;
 } CHAT_WINDOW;
 
 #define CHAT_UPDATE 0
