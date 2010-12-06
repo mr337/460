@@ -548,6 +548,8 @@ int handle_chat_input(char input)
             return DS_REQUEST;
         } else if ( input == CTRL_W) {
             delete_word();
+        } else {
+            return -1;
         }
     }
 
