@@ -387,6 +387,8 @@ void write_to_status_window(char *message)
 
 int handle_input(char input)
 {
+    if ( input == '`' ) return -1;
+    if ( input == '`' ) return -1;
     if ( chat_mode == normal || chat_mode == gaudy) {
         return handle_chat_input(input);
     } else if (chat_mode == deepsix) {
