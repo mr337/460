@@ -153,6 +153,9 @@ int main(int argc, char * argv[])
                             ch.status=0;
                             snprintf(ch.message,UNAMELENGTH+MESSAGELENGTH,"%s: %s",cI->userName,message_buffer);
                             sendChat(&ch);
+                            ch.status=2;
+                            strcpy(ch.message,"  ");
+                            sendChat(&ch);
                             break;
                         case CHAT_GAUDY:
                             ch.status=3;
