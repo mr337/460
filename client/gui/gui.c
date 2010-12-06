@@ -84,38 +84,42 @@ void write_to_user_window(int user_id, char * message)
     int len = strlen(message);
     int lineCount = 0;
     int gaudy_found = 0;
-    char line[(MESSAGELENGTH / u_wins[user_id].w) + 1][u_wins[user_id].w];
+    char line[(MESSAGELENGTH / u_wins[user_id].w) + 1][u_wins[user_id].w + 1];
  
     //scrollok(u_wins[user_id].window, 0);
     wclear(u_wins[user_id].window);
     wbkgd(u_wins[user_id].window, COLOR_PAIR(u_wins[user_id].color)); 
     wrefresh(u_wins[user_id].window);
 
-    for ( i = 0; i < len; i++ )
+    for ( i = 0; i <= len; i++ )
     {
         if ( len > 0 ) {
             if ( message[i] == ' ' ) {
                 lastSpace = i;
             }
+            line[lineCount][i - lastBreak] = message[i];
         }
 
         if ( message[i] == STX ) {
             gaudy_found = 1;
         }
 
-        line[lineCount][i - lastBreak] = message[i];
         if ( i == len - 1 ) {
-            line[lineCount][i+1] = '\0';
+            printf("0 put line:%d char:%d", lineCount, i+1);
+            line[lineCount][i - lastBreak + 1] = '\0';
             lineCount++; 
             lastBreak = i;
-            lastSpace = i;
+            lastSpace = i;    
         } else if ( (i - lastBreak) == u_wins[user_id].w - 1 ) {
             if ( lastSpace > lastBreak ) {
                 line[lineCount][lastSpace - lastBreak] = '\0';
+                printf("0 put at line:%d char:%d", lineCount,lastSpace - lastBreak);
+                printf(" sp:%d br:%d", lastSpace, lastBreak);
                 lastBreak = lastSpace + 1;
-                i = lastSpace;
+                i = lastSpace;                
             } else {
-                line[lineCount][u_wins[user_id].w] = '\0';
+                printf("Else");
+                line[lineCount][u_wins[user_id].w] = '0';
                 lastBreak = i + 1;
                 lastSpace = i;
             }
@@ -138,7 +142,7 @@ void write_to_user_window(int user_id, char * message)
         wprintw(u_wins[user_id].window, line[i]);
         j++;
       }
-    } else {
+    } else { 
       int k;
       for ( i = 0; i < lineCount; i++ ) { 
         if ( i >= lineCount - 3) {
@@ -481,21 +485,6 @@ int handle_chat_input(char input)
     
     //return CHAT_BROADCAST;
     return CHAT_UPDATE;
-}
-
-void draw_main_interface()
-{
-    initialize_windows();
-    write_to_program_window("This is\nA Test\nand junk");
-    write_to_status_window("This is\nThe Status Window\nYay");
-    write_to_user_window(0, "This is a test of writing to the user window and i hope this works");
-    write_to_user_window(0, "Abba");
-    while ( 1 )
-    {
-        char input = wgetch(e_win.window);    
-        if (handle_input(input) == CHAT_QUIT)
-            break;
-    }
 }
 
 void scroll_transcript_down()
