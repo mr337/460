@@ -7,6 +7,20 @@
 #define MESSAGELENGTH 255 //max message lengh in chars
 #define MAXTRANSMISSIONERRORS 10
 
+
+//definitions and explanation are below
+#define SB_BROADCAST 0
+#define SB_QUIT 1
+#define SB_KEYBOARDUPDATE 2
+#define SB_GAUDY 3
+#define SB_DSCANDIDATE 4
+#define SB_DSVOTE 5
+#define SB_DSEJECT 6
+#define SB_TIMEOUT 7
+#define SB_VOTESFORME 8
+#define SB_LURK 9
+#define SB_YELL 10
+
 long sentBytes;
 long recvBytes;
 int errors;
@@ -77,8 +91,8 @@ int getSock();
 //status bits: 4 - deep-six GET not voted for users list
 //status bits: 5 - deep-six vote for user
 //status bits: 6 - deep-size YOU GOT EJECTED
-//status buts: 7 - idle timeou
-//status bits: 8 - deep-six list of not voted  
+//status buts: 7 - idle timeout
+//status bits: 8 - deep-six how mayne votes I have against me  
 //status bits: 9 - lurk mode
 //status bits: 10- yell mode
 #endif

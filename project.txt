@@ -1,4 +1,3 @@
-Test ehre
 CSC 460 - Fall 2010 Project
 Interactive Real-time Multi-window Chat
 Time-stamp: <2010-10-27 12:22:31 shade>

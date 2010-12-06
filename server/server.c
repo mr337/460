@@ -26,6 +26,8 @@ int totalUsers;
 int timeout;
 int messageCount;
 char **userNames;
+char **dsVotes;
+int * dsVotesForMe;
 int * userStatus;
 int * messageStatus; //0-have not recieved message, 1-recieved message, -1 dropped user, 2 ejected
 int getMessage(int id, char * msg);
@@ -59,6 +61,8 @@ int main(int argc, char *argv[])
     numUsers = 0;
     totalUsers = 0;
     userStatus = malloc(maxUsers * sizeof(int));
+    dsVotesForMe = malloc(maxUsers * sizeof(int));
+
 
     sem_init(&lmessage,0,1);
 
@@ -69,6 +73,13 @@ int main(int argc, char *argv[])
     {
         userNames[i] = malloc(UNAMELENGTH * sizeof(char));
         strcpy(userNames[i],"\0");
+    }
+
+    dsVotes = malloc(maxUsers * sizeof(char *));
+    for(i=0; i<maxUsers; i++)
+    {
+        dsVotes[i] = malloc(50 * sizeof(char));
+        strcpy(dsVotes[i],"\0");
     }
 
     messageStatus = malloc(maxUsers * sizeof(int));
@@ -154,7 +165,7 @@ void* thread_proc(void *arg)
     int sock;
     int id=0;
     char cIBuffer[sizeof(ConnectInit)];
-    time_t lastSeen, now; 
+    time_t start,lastSeen, now; 
     
 
     sock = (int) arg;
@@ -239,8 +250,10 @@ void* thread_proc(void *arg)
     printf("Getting ready for chat loop for user id:%i\n", id);
 
     //clear values
+    time(&start);
     time(&lastSeen);
     time(&now);
+    long timeConnected;
 
     for(;;)
     {
@@ -267,7 +280,6 @@ void* thread_proc(void *arg)
                         printf("Recv message did not start with proper marker\n");
                         errors++;
 
-
                         if(errors > MAXTRANSMISSIONERRORS)
                         {
                         free(ch);
@@ -292,30 +304,41 @@ void* thread_proc(void *arg)
                     delim = strtok(NULL,"`");
                     ch->status = atoi(delim);
                     delim = strtok(NULL,"`");
-                    ch->messageLen = atoi(delim); //all I need is the message length, may optimize later
                     delim = strtok(NULL,"`");
 
-                    free(token);
+                    printf("Token:%s    Sizeof:%i\n",delim,(int)strlen(delim));
 
                     //if chat status is 1, the user is quiting
-                    if(ch->status == 1)
-                    {//may need to add some code announcing user is quiting
+                    if(ch->status == SB_QUIT)
+                    {
                         quit = 1;
                         free(ch);
                         free(sChat);
                         break;
                     }
-                    if(ch->messageLen == 0)
-                    {//protect from blank messages
-                        free(ch);
-                        free(sChat);
-                        continue;
+                    //else if(ch->messageLen == 0)
+                    //{//protect from blank messages
+                    //    free(ch);
+                    //    free(sChat);
+                    //    continue;
+                    //}
+                    else if(ch->status == SB_KEYBOARDUPDATE )
+                    {
+                        //printf("Size of message: %i  %s\n",(int)strlen(&token),token);
+
+
+                        memset(token,0,1500);
+                        time(&now);
+                        timeConnected=difftime(now,start);
+                        sprintf(token,"%s %i %ld.%ldm",name,dsVotesForMe[id],timeConnected/60,((timeConnected%60)*10)/60);
+                        strcat(sChat,token);
                     }
 
                     sem_wait(&lmessage);
                     addMessage(sChat);
                     sem_post(&lmessage);
-                    
+                   
+                    free(token);
                     free(ch);
                     free(sChat);
                 }
@@ -376,6 +399,7 @@ void* thread_proc(void *arg)
     close(sock);
     sem_wait(&lusers);
     numUsers--;
+    dsVotesForMe[id] = 0;
     strcpy(userNames[id], "\0");
     messageStatus[id] = -1;
     sem_post(&lusers);

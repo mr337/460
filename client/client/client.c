@@ -18,6 +18,7 @@ void quit();
 int sendReadyChat(char * msg, int status);
 void getStats();
 int handleACK(ConnectACK * ack);
+int formatkeyboarupdate(char * msg);
 
 char ip[15];
 char user[UNAMELENGTH+200];
@@ -159,6 +160,7 @@ int main(int argc, char * argv[])
                         case CHAT_UPDATE:
                             ch.status=2;
                             strncpy(ch.message,message_buffer,MESSAGELENGTH); 
+                            
                             sendChat(&ch);
                             break;
                         case CHAT_BROADCAST:
@@ -218,37 +220,37 @@ int main(int argc, char * argv[])
 
                     switch(ch.status)
                     {
-                        case 0:
+                        case SB_BROADCAST:
                             //printw("Writing to transcript %s\n",ch.message);
                             //refresh();
                             write_to_transcript(ch.message,0);
                             break;
-                        case 1:
+                        case SB_QUIT:
                             break;
-                        case 2:
+                        case SB_KEYBOARDUPDATE:
                             write_to_user_window(ch.id, ch.message);
                             break;
-                        case 3:
+                        case SB_GAUDY:
                             write_to_transcript(ch.message, 1);
                             break;
-                        case 4:
+                        case SB_DSCANDIDATE:
                             show_ds_window(ch.message);
                             break;
-                        case 5:
+                        case SB_DSVOTE:
                             write_to_transcript(ch.message, 0);
                             break;
-                        case 6:
+                        case SB_DSEJECT:
                             show_eject_window(ch.message);
                             break;
-                        case 7:
+                        case SB_TIMEOUT:
                             //show_timeout_window(ch.message);
                             break;
-                        case 8:
+                        case SB_VOTESFORME:
                             break;
-                        case 9:
+                        case SB_LURK:
                             write_to_user_window(ch.id, ch.message);
                             break;
-                        case 10:
+                        case SB_YELL:
                             write_to_transcript(ch.message, 0);
                             break;
                     }
@@ -327,4 +329,9 @@ int handleACK(ConnectACK * ack)
     }
 
     return 0; //no problems and continue loading client
+}
+
+int formatkeyboarupdate(char * msg)
+{
+    
 }
