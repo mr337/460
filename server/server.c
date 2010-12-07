@@ -20,6 +20,7 @@ int setUserName(char * name);
 int checkDupUserName(char * name);
 void addMessage(char * msg);
 int checkRecipients();
+int getList(char *msg, int id);
 
 int maxUsers;
 int numUsers;
@@ -29,7 +30,7 @@ int messageCount;
 char **userNames;
 char **dsVotes;
 char **PDM;
-int * dsVotesForMe;
+int * dsVotesForMe;//hold the list of votes
 int * userStatus;
 int * messageStatus; //0-have not recieved message, 1-recieved message, -1 dropped user, 2 ejected
 int getMessage(int id, char * msg);
@@ -357,6 +358,40 @@ void* thread_proc(void *arg)
                         sprintf(token,"\f%ld.%ldm %i %s",timeConnected/60,((timeConnected%60)*10)/60,dsVotesForMe[id],name);
                         strcat(sChat,token);
                     }
+                    else if(ch->status == 4 && numUsers > 1)
+                    {
+                        char voteFor[1500];
+                        memset(voteFor,0,1500);
+                        sem_wait(&lusers);
+                        getList(voteFor,id);
+                        sem_post(&lusers);
+                        if(strlen(voteFor) > 0)
+                        {
+                            sprintf(sChat,"!%4d`%i`%i`50`%s",(int)strlen(voteFor)+11,id,4,voteFor); 
+                            printf("sChat: %s     Size:%i\n",sChat,(int)strlen(sChat));
+                            send(sock,sChat,strlen(sChat),0);
+                        }
+
+                        free(token);
+                        free(ch);
+                        free(sChat);
+
+                        continue;
+                         
+                    }
+                    else if(ch->status == 5)
+                    {
+                        int vote = atoi(delim);
+                        dsVotesForMe[vote]=dsVotesForMe[vote]+1;
+                        printf("Voted for %i\n",vote);
+
+
+                        free(token);
+                        free(ch);
+                        free(sChat);
+
+                        continue;
+                    }
 
                     sem_wait(&lmessage);
                     addMessage(sChat);
@@ -517,4 +552,42 @@ int getMessage(int id, char * msg)
         strcpy(msg,getNode());
         return 1;
     }
+}
+
+int getList(char *msg, int id)
+{
+    int * votedFor = malloc(numUsers * sizeof(int));
+    char tmp[50] = {0};
+    int i;
+    for(i=0;i<numUsers;i++)
+    {
+        votedFor[i]=0;
+    }
+
+    char votes[50];
+    strcpy(votes,dsVotes[id]);
+    
+    if(strcmp(votes,"")!=0)
+    {
+        //breakup string and mark voes
+        char * p = strtok(votes,",");
+        while(p != NULL)
+        {
+            votedFor[atoi(p)] = 1;
+            p = strtok(NULL,",");
+        }
+
+    }
+
+    for(i=0;i<numUsers;i++)
+    {
+        if(votedFor[i] == 0)
+        {
+            sprintf(tmp,",%i-%s",i,userNames[i]);
+            strcat(msg,tmp);
+            memset(tmp,0,50);
+        }
+    }
+
+    return 1;
 }

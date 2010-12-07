@@ -473,11 +473,23 @@ void show_yell_window(char ** message, int length)
 
 void show_ds_window(char *message)
 {
+    int i=1;
     if ( d_win.window == NULL ) {
         d_win.window = newwin(d_win.h, d_win.w, d_win.y, d_win.x);
     }
     wclear(d_win.window);
-    wprintw(d_win.window, message);
+    wprintw(d_win.window,"Pick a user to vote");
+    wmove(d_win.window,i,0);
+    i++;
+    char * p = strtok(message,",");
+    while(p != NULL)
+    {
+        wprintw(d_win.window,p);
+        p = strtok(NULL,",");
+        wmove(d_win.window,i,0);
+        i++;
+    }
+    //wprintw(d_win.window, message);
     wrefresh(d_win.window);
     chat_mode = deepsix; 
 }
