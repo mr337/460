@@ -59,6 +59,7 @@ int receiveChat(Chat * ch);
 int serializeChat(char * msg, Chat * ch);
 int deserializeChat(char * msg, Chat * ch);
 int getSock();
+int receivePDM(char **);
 
 
 //Struct NOTES - PLEASE READ!

@@ -27,9 +27,12 @@ long timeConnected;
 long keysTyped;
 int id;
 Chat ch;
+char ** PDM; //pre defined messages
 
 int majVersion = 1;
 int minVersion = 1;
+
+int pdmCount;
 
 //for connected stats
 time_t tStart, tEnd;
@@ -101,6 +104,12 @@ int main(int argc, char * argv[])
     refresh();
 
     sock = getSock();
+
+
+    //recv message
+    //pdmCount = receivePDM(PDM);
+
+     
 
     fd_set fds;
     FD_ZERO(&fds);
@@ -197,6 +206,7 @@ int main(int argc, char * argv[])
                             sprintf(ch.message, "yelllist");
                             sendChat(&ch);
                             break;
+                        //case YELL_RETURN
                         case -1:
                             ch.status=2;
                             strcpy(ch.message,"  ");
@@ -334,4 +344,5 @@ int handleACK(ConnectACK * ack)
 int formatkeyboarupdate(char * msg)
 {
     
+    return 0;
 }

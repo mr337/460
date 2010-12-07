@@ -150,3 +150,53 @@ int deserializeChat(char * msg, Chat * ch)
     strcpy(ch->message,delim);
     return 0; //0 for now errors
 }
+
+
+int receivePDM(char ** pdm)
+{
+    memset(tmpRecv,0,1500);
+    if(recv(sock,tmpRecv,5,0)!=5)
+    {
+        printw("Error receving string size\n");
+        errors++;
+        refresh();
+        return 0;
+    }
+
+    if(tmpRecv[0] != '!')
+    {
+        printw("Recv message did not start with proper marker\n");
+        errors++;
+        refresh();
+        return 0;
+    }
+
+    recvBytes += 5;
+
+    int sizeToRecv = atoi(tmpRecv+1);
+    memset(tmpRecv,0,1500);
+    recvBytes += recv(sock,tmpRecv,sizeToRecv,0);
+
+    char * delim = strtok(tmpRecv,"`");
+    int pdmMaxSize = atoi(delim);
+    delim = strtok(NULL,"`");
+    int pdmCount = atoi(delim); //# of messages
+    pdm = malloc(pdmCount * sizeof(char *));
+    int i;
+    for(i=0;i<pdmCount;i++)
+    {
+        pdm[i] = malloc(pdmMaxSize * sizeof(char));
+        strcpy(pdm[i],"\0");
+    }
+
+    i=0;
+    delim = strtok(NULL,"`");
+    while(delim != NULL)
+    {
+        strncpy(pdm[i],delim,pdmMaxSize);
+        delim = strtok(NULL,"`");
+        i++;
+    }
+
+    return  pdmCount;
+}
