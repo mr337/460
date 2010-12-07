@@ -256,12 +256,7 @@ void* thread_proc(void *arg)
     }
 
     send(sock,tmpPDM,strlen(tmpPDM)-1,0);
-    printf("Current YELL message:%s\n YELL siz: %d",tmpPDM,strlen(tmpPDM)-1); //don't need \0
     free(tmpPDM);
-
-
-    //client now has all the msg and is ready to start chating
-
 
     printf("UserID : %i  Username:%s  Current Users: %i\n", id, name, numUsers);
 
