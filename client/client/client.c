@@ -163,7 +163,6 @@ int main(int argc, char * argv[])
                         case CHAT_UPDATE:
                             ch.status=2;
                             strncpy(ch.message,message_buffer,MESSAGELENGTH); 
-                            
                             sendChat(&ch);
                             break;
                         case CHAT_BROADCAST:

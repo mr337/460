@@ -91,16 +91,16 @@ int main(int argc, char *argv[])
     }
 
     //no cool way to load them
-    strcpy(PDM[0],"`This is zero message        \0");
-    strcpy(PDM[1],"`This is first message       \0");
-    strcpy(PDM[2],"`This is second message      \0");
-    strcpy(PDM[3],"`This is third message       \0");
-    strcpy(PDM[4],"`This is fourth message      \0");
-    strcpy(PDM[5],"`This is fifth message       \0");
-    strcpy(PDM[6],"`This is sixth message       \0");
-    strcpy(PDM[7],"`This is seventh message     \0");
-    strcpy(PDM[8],"`This is eight message       \0");
-    strcpy(PDM[9],"`This is ninth message       \0");
+    strcpy(PDM[0],"`Hell, yeah                  \0");
+    strcpy(PDM[1],"`Surely you can't be serious \0");
+    strcpy(PDM[2],"`I am serious                \0");
+    strcpy(PDM[3],"`and don't call me Shirley   \0");
+    strcpy(PDM[4],"`Vote for chat program??     \0");
+    strcpy(PDM[5],"`there's our agreement       \0");
+    strcpy(PDM[6],"`frak this!                  \0");
+    strcpy(PDM[7],"`Help me, help you           \0");
+    strcpy(PDM[8],"`OMG, The rain is wet!!!     \0");
+    strcpy(PDM[9],"`Bond, James Bond            \0");
 
     messageStatus = malloc(maxUsers * sizeof(int));
 
