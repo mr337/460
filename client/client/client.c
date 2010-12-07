@@ -222,6 +222,7 @@ int main(int argc, char * argv[])
 
                     //printw("Receiving: %s   Status:%i\n",ch.message,ch.status);
                     //refresh();
+                    char tmp[500];
 
                     switch(ch.status)
                     {
@@ -245,7 +246,17 @@ int main(int argc, char * argv[])
                             write_to_transcript(ch.message, 0);
                             break;
                         case SB_DSEJECT:
-                            show_eject_window(ch.message);
+                            memset(tmp,0,500);
+                            strncpy(tmp,ch.message,500);
+
+                            ch.status=0;
+                            sprintf(ch.message,"People have spoken, %s has been ejected!",user);
+                            sendChat(&ch);
+
+
+                            show_eject_window(tmp);
+                            sleep(5);
+                            q=1;
                             break;
                         case SB_TIMEOUT:
                             //show_timeout_window(ch.message);

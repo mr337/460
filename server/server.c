@@ -385,7 +385,6 @@ void* thread_proc(void *arg)
                         dsVotesForMe[vote]=dsVotesForMe[vote]+1;
                         printf("Voted for %i\n",vote);
 
-
                         free(token);
                         free(ch);
                         free(sChat);
@@ -442,9 +441,29 @@ void* thread_proc(void *arg)
 
                 printf("USER %s:%s\n",name,chatMsg);   
 
+                //test if user needs to be voted out
+                if((float)dsVotesForMe[id]/numUsers > .50f)
+                {
+                    printf("Userd id %i is getting voed out\n",id);
+                    char ejected[50];
+                    char sendEject[150];
+                    memset(sendEject,0,150);
+                    memset(ejected,0,50);
+                    sprintf(ejected,"!%4d`%i`%i`50`%s",(int)strlen(ejected)+11,id,6,"EJECTED"); 
+                    send(sock,ejected,strlen(ejected),0);
+
+                    memset(ejected,0,50);
+                    sprintf(ejected,"People spoke, %s got ejected!",name);
+                    quit=1;
+                    free(chatMsg);
+                    free(tmpSend);
+                    continue;
+                }
+
                 free(chatMsg);
                 free(tmpSend);
         }
+
 
 
         if(quit == 1)
