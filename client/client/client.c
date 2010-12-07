@@ -199,11 +199,14 @@ int main(int argc, char * argv[])
                             sendChat(&ch);
                             break;
                         case YELL:
-                            ch.status=10;
-                            sprintf(ch.message, "yelllist");
-                            sendChat(&ch);
+                            show_yell_window(PDM,pdmCount);
+                            //ch.status=10;
+                            //sprintf(ch.message, "yelllist");
+                            //sendChat(&ch);
                             break;
-                        //case YELL_RETURN
+                        case YELL_RETURN:
+                            printw("Response:%s\n",PDM[response_code]);
+                            break;
                         case -1:
                             ch.status=2;
                             strcpy(ch.message,"  ");

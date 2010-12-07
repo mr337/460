@@ -457,15 +457,18 @@ int handle_input(char input)
 void show_yell_window(char ** message, int length)
 {
     int i;
-    WINDOW *win = newwin(3 + length, 50, 1, 1);
+    char line[50];
+    memset(line,0,50);
+    WINDOW *win = newwin(3 + length, 50, 5, 10);
     wmove(win, 1, 1);
     wprintw(win, "---CHOOSE A MESSAGE BY THE LETTER NAME---");
     for ( i = 0; i < length; i++ ) {
-        char* line = message[i];
+        sprintf(line,"%c-%s",(char)i+65,message[i]);
         wmove(win, i + 2, 1);
         wprintw(win, line);
     }
     wrefresh(win);
+    chat_mode = yell;
 }
 
 void show_ds_window(char *message)
