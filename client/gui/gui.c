@@ -107,6 +107,19 @@ void write_to_transcript(char *message, int check_for_gaudy)
     wrefresh(t_win.window);
 }
 
+void write_user_status(int user_id, char * message)
+{
+    int i;
+    WINDOW *win = u_wins[user_id].window;
+    wmove(win, 0, 0);
+    wattron(win, A_BOLD);
+    for ( i  = 0; i < 20; i++ ) {
+        waddch(win, message[i]);
+    }
+    wattroff(win, A_BOLD);
+    wrefresh(win);
+}
+
 void write_to_user_window(int user_id, char * message)
 {
     int i,j;
@@ -115,10 +128,12 @@ void write_to_user_window(int user_id, char * message)
     int len = strlen(message);
     int lineCount = 0;
     int gaudy_found = 0;
+    int status_index = 0;
     char line[(MESSAGELENGTH / u_wins[user_id].w) + 1][u_wins[user_id].w + 1];
 
     //scrollok(u_wins[user_id].window, 0);
-    wclear(u_wins[user_id].window);
+    wmove(u_wins[user_id].window, 1, 0);
+    wclrtobot(u_wins[user_id].window);
     wbkgd(u_wins[user_id].window, COLOR_PAIR(u_wins[user_id].color)); 
     wrefresh(u_wins[user_id].window);
 
@@ -127,6 +142,11 @@ void write_to_user_window(int user_id, char * message)
         if ( len > 0 ) {
             if ( message[i] == ' ' ) {
                 lastSpace = i;
+            } else if ( message[i] == '\f' ) {
+                lastSpace = i;
+                lastBreak = i;                
+                status_index = i + 1;
+                break;
             }
             line[lineCount][i - lastBreak] = message[i];
         }
@@ -154,12 +174,12 @@ void write_to_user_window(int user_id, char * message)
         }
     }
 
-    j = 0;
+    j = 1;
     scrollok(u_wins[user_id].window, 0);
 
     if ( gaudy_found == 0 ) {
-        if ( lineCount > 3 ) {
-            i = lineCount - 3;
+        if ( lineCount > 2 ) {
+            i = lineCount - 2;
         } else {
             i = 0;
         }
@@ -172,7 +192,7 @@ void write_to_user_window(int user_id, char * message)
     } else { 
         int k;
         for ( i = 0; i < lineCount; i++ ) { 
-            if ( i >= lineCount - 3) {
+            if ( i >= lineCount - 2) {
                 wmove(u_wins[user_id].window, j, 0);
                 j++;
             }
@@ -191,6 +211,7 @@ void write_to_user_window(int user_id, char * message)
         }
     }
 
+    write_user_status(user_id, &message[status_index]);
     wrefresh(u_wins[user_id].window);
 }
 
@@ -388,7 +409,6 @@ void write_to_status_window(char *message)
 int handle_input(char input)
 {
     if ( input == '`' ) return -1;
-    if ( input == '`' ) return -1;
     if ( chat_mode == normal || chat_mode == gaudy) {
         return handle_chat_input(input);
     } else if (chat_mode == deepsix) {
@@ -412,10 +432,16 @@ int handle_input(char input)
             return CHAT_QUIT;
         }
         return -1;
+    } else if (chat_mode == yell) {
+        return YELL_RETURN;
     }  else {
         return -1;
     }
 
+}
+
+void show_yell_window(char ** message, int length)
+{
 }
 
 void show_ds_window(char *message)
@@ -548,6 +574,8 @@ int handle_chat_input(char input)
             return DS_REQUEST;
         } else if ( input == CTRL_W) {
             delete_word();
+        } else if ( input == CTRL_Y) {
+            return YELL;
         } else {
             return -1;
         }

@@ -18,6 +18,7 @@ typedef struct
 #define CHAT_GAUDY 7
 #define DS_REQUEST 3
 #define DS_VOTE 4
+#define YELL_RETURN 8
 
 #define CTRL_6 0x1E
 #define CTRL_RB 0x1D
@@ -56,7 +57,9 @@ void write_to_program_window(char * message);
 void write_to_status_window(char * message);
 void show_ds_window(char * message);
 void show_eject_window(char * message);
+void show_yell_window(char ** messages, int length);
 void show_lurk_window();
+void write_user_status(int user_id, char *message);
 
 char message_buffer[MESSAGELENGTH];
 int response_code; 

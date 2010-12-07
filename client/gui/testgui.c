@@ -7,6 +7,7 @@ int main(int argc, char *argv[])
     int q = 0;
     initialize_gui();
     initialize_windows();
+    write_to_user_window(0, "This is a chat update and stuff\fThis is status update");
     while ( q== 0 )
     {       
         char input = getch();
@@ -20,8 +21,6 @@ int main(int argc, char *argv[])
               break;
            case CHAT_BROADCAST:
               write_to_transcript(message_buffer, 0);
-           default: 
-            write_to_user_window(0, message_buffer);
         }
     }
     cleanup_gui();
