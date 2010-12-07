@@ -12,6 +12,7 @@
 #include <semaphore.h>
 #include "../client/networking/networking.h"
 #include "linkedlist.h"
+#include "yell.h"
 
 //prototypes
 void* thread_proc(void *arg);
@@ -27,6 +28,7 @@ int timeout;
 int messageCount;
 char **userNames;
 char **dsVotes;
+char **PDM;
 int * dsVotesForMe;
 int * userStatus;
 int * messageStatus; //0-have not recieved message, 1-recieved message, -1 dropped user, 2 ejected
@@ -81,6 +83,25 @@ int main(int argc, char *argv[])
         dsVotes[i] = malloc(50 * sizeof(char));
         strcpy(dsVotes[i],"\0");
     }
+
+    PDM = malloc(msgCount * sizeof(char*));
+    for(i=0;i<msgCount;i++)
+    {
+        PDM[i] = malloc(maxLength*sizeof(char));
+    }
+
+    //no cool way to load them
+    strcpy(PDM[0],"`This is zero message       \0");
+    strcpy(PDM[1],"`This is first message      \0");
+    strcpy(PDM[2],"`This is second message     \0");
+    strcpy(PDM[3],"`This is third message      \0");
+    strcpy(PDM[4],"`This is fourth message     \0");
+    strcpy(PDM[5],"`This is fifth message      \0");
+    strcpy(PDM[6],"`This is sixth message      \0");
+    strcpy(PDM[7],"`This is seventh message    \0");
+    strcpy(PDM[8],"`This is eight message      \0");
+    strcpy(PDM[9],"`This is ninth message      \0");
+
 
     messageStatus = malloc(maxUsers * sizeof(int));
 
@@ -224,6 +245,23 @@ void* thread_proc(void *arg)
         pthread_exit(0); 
     }
     
+    //send yell messages (PDM) 
+    char * tmpPDM = malloc(1500*sizeof(char));
+    
+    sprintf(tmpPDM,"!%4d`%i`%i",maxLength*msgCount,maxLength,msgCount);    
+     
+    int i;
+    for(i=0;i<msgCount;i++)
+    {
+        strncat(tmpPDM,PDM[i],maxLength);
+    }
+
+    send(sock,tmpPDM,strlen(tmpPDM),0);
+    free(tmpPDM);
+
+
+    //client now has all the msg and is ready to start chating
+
 
     printf("UserID : %i  Username:%s  Current Users: %i\n", id, name, numUsers);
 
