@@ -269,6 +269,8 @@ int main(int argc, char * argv[])
                 getStats();
                 if(errors > MAXTRANSMISSIONERRORS)
                 {
+                    printf("Too many transmission errors. Max Tranmission errors of %i exceeded.\nPlease try again.\n",MAXTRANSMISSIONERRORS);
+                    printf("Common reasons:\n\tServer Crashed \n\tIdiot unplugged network cable \n\tRodent crawled into server \n\tYou finally exceeded your Comcast Monthly Quota\n");
                     q=1;
                 }
         }
@@ -282,8 +284,6 @@ int main(int argc, char * argv[])
     free(cI);
 
     quit();
-    printf("Too many transmission errors. Max Tranmission errors of %i exceeded.\nPlease try again.\n",MAXTRANSMISSIONERRORS);
-    printf("Common reasons:\n\tServer Crashed \n\tIdiot unplugged network cable \n\tRodent crawled into server \n\tYou finally exceeded your Comcast Monthly Quota\n");
     exit(EXIT_SUCCESS);
 }
 
