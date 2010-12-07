@@ -144,11 +144,10 @@ void write_to_user_window(int user_id, char * message)
             if ( message[i] == ' ' ) {
                 lastSpace = i;
             } else if ( message[i] == '\f' ) {
-                
                 line[lineCount][i - lastBreak] = '\0';
                 lastSpace = i;
                 lastBreak = i;                
-                status_index = i + 1;
+                status_index = i + 1;        
                 lineCount++;
                 break;
             }
@@ -198,7 +197,6 @@ void write_to_user_window(int user_id, char * message)
         int k;
         for ( i = 0; i < lineCount; i++ ) { 
             if ( i >= lineCount - 2) {
-
                 wmove(u_wins[user_id].window, j, 0);
                 j++;
             }
@@ -419,11 +417,11 @@ int handle_input(char input)
         return handle_chat_input(input);
     } else if (chat_mode == deepsix) {
         touch_screen();
+        chat_mode = normal;
         if ( input >= 48 && input <= 57) {
             response_code = (int)input;
             return DS_VOTE; 
         }
-        chat_mode = normal; 
         return -1;
     } else if (chat_mode == ejected) {
         touch_screen();
@@ -439,7 +437,17 @@ int handle_input(char input)
         }
         return -1;
     } else if (chat_mode == yell) {
-        return YELL_RETURN;
+        touch_screen();
+        chat_mode = normal;
+        if ( input >= 97 && input <= 122 )
+        {
+            response_code = input - 97;
+            return YELL_RETURN;
+        } else if ( input >= 65 && input <= 90 ) {
+            response_code = input - 65;
+            return YELL_RETURN;
+        }
+        return -1;
     }  else {
         return -1;
     }
@@ -452,8 +460,12 @@ void show_yell_window(char ** message, int length)
     WINDOW *win = newwin(3 + length, 50, 1, 1);
     wmove(win, 1, 1);
     wprintw(win, "---CHOOSE A MESSAGE BY THE LETTER NAME---");
-    //for ( i = 0; i < length; i++ ) {
-    //    char* 
+    for ( i = 0; i < length; i++ ) {
+        char* line = message[i];
+        wmove(win, i + 2, 1);
+        wprintw(win, line);
+    }
+    wrefresh(win);
 }
 
 void show_ds_window(char *message)
@@ -587,6 +599,7 @@ int handle_chat_input(char input)
         } else if ( input == CTRL_W) {
             delete_word();
         } else if ( input == CTRL_Y) {
+            chat_mode = yell; 
             return YELL;
         } else {
             return -1;
