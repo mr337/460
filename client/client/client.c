@@ -142,7 +142,7 @@ int main(int argc, char * argv[])
                 {
                     ch.id = id;
                     keysTyped++;
-                    usleep(20000);
+                    usleep(10000);
                     switch(handle_input(getch()))
                     {
                         case CHAT_QUIT:
@@ -152,15 +152,12 @@ int main(int argc, char * argv[])
                             ch.status=2;
                             strcpy(ch.message,"  ");
                             sendChat(&ch);
-
                             ch.status=0;
                             sprintf(ch.message,"%s left the chat.",cI->userName);
                             sendChat(&ch);
-
                             ch.status=1;
                             strcpy(ch.message,"QUITING");
                             sendChat(&ch);
-                            
                             q=1; //bit to quit
                             break;
                         case CHAT_UPDATE:
@@ -200,12 +197,11 @@ int main(int argc, char * argv[])
                             break;
                         case YELL:
                             show_yell_window(PDM,pdmCount);
-                            //ch.status=10;
-                            //sprintf(ch.message, "yelllist");
-                            //sendChat(&ch);
                             break;
                         case YELL_RETURN:
-                            printw("Response:%s\n",PDM[response_code]);
+                            ch.status=10;
+                            snprintf(ch.message,UNAMELENGTH+MESSAGELENGTH,"%s: %s",cI->userName,PDM[response_code]);
+                            sendChat(&ch);
                             break;
                         case -1:
                             ch.status=2;
