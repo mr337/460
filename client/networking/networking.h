@@ -24,6 +24,7 @@
 long sentBytes;
 long recvBytes;
 int errors;
+char ** PDM;
 
 typedef struct
 {
@@ -59,7 +60,7 @@ int receiveChat(Chat * ch);
 int serializeChat(char * msg, Chat * ch);
 int deserializeChat(char * msg, Chat * ch);
 int getSock();
-int receivePDM(char **);
+int receivePDM();
 
 
 //Struct NOTES - PLEASE READ!

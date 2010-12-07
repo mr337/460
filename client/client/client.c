@@ -106,7 +106,7 @@ int main(int argc, char * argv[])
     sock = getSock();
 
     //recv message
-    pdmCount = receivePDM(PDM);
+    pdmCount = receivePDM();
 
     //init valies for chat loop
     fd_set fds;
