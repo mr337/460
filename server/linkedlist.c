@@ -14,6 +14,7 @@ void addNode(char * msg)
     struct node * n;
     n = (struct node *) malloc(sizeof(struct node));
     strncpy(n->message,msg,UNAMELENGTH+MESSAGELENGTH+5);
+    n->next = NULL;
 
     if(head == NULL)
     {
