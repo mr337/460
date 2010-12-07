@@ -257,6 +257,7 @@ void* thread_proc(void *arg)
     }
 
     send(sock,tmpPDM,strlen(tmpPDM),0);
+    printf("Current YELL message:%s\n",tmpPDM);
     free(tmpPDM);
 
 
