@@ -527,12 +527,13 @@ int backspace() {
 }
 
 void delete_word() {
+    int done = 0;
+    int word_found = 0;
     while ( message_index > 0 ) {        
-        int done = 0;
-        int word_found = 0;
-        if (message_buffer[message_index] == ' ') {
-            if ( word_found )
+        if (message_buffer[message_index - 1] == ' ') {
+            if ( word_found ) {
                 done = 1;
+            }
         } else {
             word_found = 1;
         }
