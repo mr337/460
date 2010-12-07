@@ -114,6 +114,8 @@ void write_user_status(int user_id, char * message)
     wmove(win, 0, 0);
     wattron(win, A_BOLD);
     for ( i  = 0; i < 20; i++ ) {
+        if ( message[i] == '\0' )
+            break;
         waddch(win, message[i]);
     }
     wattroff(win, A_BOLD);
@@ -131,7 +133,6 @@ void write_to_user_window(int user_id, char * message)
     int status_index = 0;
     char line[(MESSAGELENGTH / u_wins[user_id].w) + 1][u_wins[user_id].w + 1];
 
-    //scrollok(u_wins[user_id].window, 0);
     wmove(u_wins[user_id].window, 1, 0);
     wclrtobot(u_wins[user_id].window);
     wbkgd(u_wins[user_id].window, COLOR_PAIR(u_wins[user_id].color)); 
@@ -143,9 +144,12 @@ void write_to_user_window(int user_id, char * message)
             if ( message[i] == ' ' ) {
                 lastSpace = i;
             } else if ( message[i] == '\f' ) {
+                
+                line[lineCount][i - lastBreak] = '\0';
                 lastSpace = i;
                 lastBreak = i;                
                 status_index = i + 1;
+                lineCount++;
                 break;
             }
             line[lineCount][i - lastBreak] = message[i];
@@ -166,7 +170,7 @@ void write_to_user_window(int user_id, char * message)
                 lastBreak = lastSpace + 1;
                 i = lastSpace;                
             } else {
-                line[lineCount][u_wins[user_id].w] = '0';
+                line[lineCount][u_wins[user_id].w] = '\0';
                 lastBreak = i + 1;
                 lastSpace = i;
             }
@@ -187,12 +191,14 @@ void write_to_user_window(int user_id, char * message)
         for ( ; i < lineCount; i++ ) {     
             wmove(u_wins[user_id].window, j, 0);
             wprintw(u_wins[user_id].window, line[i]);
+            wrefresh(t_win.window);
             j++;
         }
     } else { 
         int k;
         for ( i = 0; i < lineCount; i++ ) { 
             if ( i >= lineCount - 2) {
+
                 wmove(u_wins[user_id].window, j, 0);
                 j++;
             }
@@ -203,7 +209,7 @@ void write_to_user_window(int user_id, char * message)
                     wattroff(u_wins[user_id].window, A_REVERSE);
                 } else if ( line[i][k] == '\0' ) {
                     break;
-                } else if ( i >= lineCount - 3) {        
+               } else if ( i >= lineCount - 2) {        
                     waddch(u_wins[user_id].window, line[i][k]);
                 }
                 wrefresh(u_wins[user_id].window);
@@ -442,6 +448,12 @@ int handle_input(char input)
 
 void show_yell_window(char ** message, int length)
 {
+    int i;
+    WINDOW *win = newwin(3 + length, 50, 1, 1);
+    wmove(win, 1, 1);
+    wprintw(win, "---CHOOSE A MESSAGE BY THE LETTER NAME---");
+    //for ( i = 0; i < length; i++ ) {
+    //    char* 
 }
 
 void show_ds_window(char *message)
