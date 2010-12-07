@@ -18,7 +18,6 @@ void quit();
 int sendReadyChat(char * msg, int status);
 void getStats();
 int handleACK(ConnectACK * ack);
-int formatkeyboarupdate(char * msg);
 
 char ip[15];
 char user[UNAMELENGTH+200];
@@ -337,10 +336,4 @@ int handleACK(ConnectACK * ack)
     }
 
     return 0; //no problems and continue loading client
-}
-
-int formatkeyboarupdate(char * msg)
-{
-    
-    return 0;
 }
