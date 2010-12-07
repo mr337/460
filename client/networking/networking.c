@@ -81,6 +81,7 @@ int getACK(ConnectACK * cACK)
 
 int sendChat(Chat * ch)
 {//0 ERROR , 1 good
+
     memset(tmpSend,0,1500);
     char * sChat = (char*)malloc(1000);
     //int size = serializeChat(sChat, ch);

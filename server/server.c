@@ -311,6 +311,8 @@ void* thread_proc(void *arg)
                     char * sChat = malloc(1500);
                     char * token = malloc(1500);
 
+                    memset(sChat,0,50);
+
                     //get size then serialized data
                     recv(sock,sChat,5,0); 
                     if(sChat[0] != '!')
@@ -333,7 +335,6 @@ void* thread_proc(void *arg)
                     int sizeToRecv = atoi(sChat+1);
                     recv(sock,sChat,sizeToRecv,0);
 
-
                     time(&lastSeen);
                     strncpy(token,sChat,sizeToRecv+1);
 
@@ -344,7 +345,6 @@ void* thread_proc(void *arg)
                     delim = strtok(NULL,"`");
                     delim = strtok(NULL,"`");
 
-                    //printf("Token:%s    Sizeof:%i\n",delim,(int)strlen(delim));
 
                     //if chat status is 1, the user is quiting
                     if(ch->status == SB_QUIT)
@@ -354,25 +354,8 @@ void* thread_proc(void *arg)
                         free(sChat);
                         break;
                     }
-                    //else if(ch->messageLen == 0)
-                    //{//protect from blank messages
-                    //    free(ch);
-                    //    free(sChat);
-                    //    continue;
-                    //}
                     else if(ch->status == SB_KEYBOARDUPDATE)
                     {
-                        //printf("Size of message: %i  %s\n",(int)strlen(&token),token);
-                        int strSize = strlen(delim);
-                        //printf("Size of delim is %i\n",strSize);
-                        //if(strSize < 40)
-                        //{
-                        //    memset(token,0,60);
-                        //    memset(token,32,40-strSize);
-                        //    strcat(sChat,token);
-                        //}
-
-
                         memset(token,0,1500);
                         time(&now);
                         timeConnected=difftime(now,start);
