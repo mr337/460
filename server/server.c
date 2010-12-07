@@ -364,19 +364,19 @@ void* thread_proc(void *arg)
                     {
                         //printf("Size of message: %i  %s\n",(int)strlen(&token),token);
                         int strSize = strlen(delim);
-                        printf("Size of delim is %i\n",strSize);
-                        if(strSize < 40)
-                        {
-                            memset(token,0,60);
-                            memset(token,32,40-strSize);
-                            strcat(sChat,token);
-                        }
+                        //printf("Size of delim is %i\n",strSize);
+                        //if(strSize < 40)
+                        //{
+                        //    memset(token,0,60);
+                        //    memset(token,32,40-strSize);
+                        //    strcat(sChat,token);
+                        //}
 
 
                         memset(token,0,1500);
                         time(&now);
                         timeConnected=difftime(now,start);
-                        sprintf(token,"%s %i %ld.%ldm",name,dsVotesForMe[id],timeConnected/60,((timeConnected%60)*10)/60);
+                        sprintf(token,"\f%ld.%ldm %i %s",timeConnected/60,((timeConnected%60)*10)/60,dsVotesForMe[id],name);
                         strcat(sChat,token);
                     }
 

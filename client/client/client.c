@@ -105,12 +105,10 @@ int main(int argc, char * argv[])
 
     sock = getSock();
 
-
     //recv message
-    //pdmCount = receivePDM(PDM);
+    pdmCount = receivePDM(PDM);
 
-     
-
+    //init valies for chat loop
     fd_set fds;
     FD_ZERO(&fds);
     FD_SET(0,&fds);
