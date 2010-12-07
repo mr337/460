@@ -360,7 +360,7 @@ void* thread_proc(void *arg)
                     //    free(sChat);
                     //    continue;
                     //}
-                    else if(ch->status == SB_KEYBOARDUPDATE && strcmp(delim,"  ") != 0)
+                    else if(ch->status == SB_KEYBOARDUPDATE)
                     {
                         //printf("Size of message: %i  %s\n",(int)strlen(&token),token);
                         int strSize = strlen(delim);
