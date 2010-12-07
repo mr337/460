@@ -254,7 +254,7 @@ int main(int argc, char * argv[])
                             sendChat(&ch);
 
 
-                            show_eject_window(tmp);
+                            show_eject_window("You have been ejected. Have a nice life :)");
                             sleep(5);
                             q=1;
                             break;
