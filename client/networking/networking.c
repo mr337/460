@@ -152,7 +152,7 @@ int deserializeChat(char * msg, Chat * ch)
 }
 
 
-int receivePDM(char ** pdm)
+int receivePDM()
 {
     memset(tmpRecv,0,1500);
     if(recv(sock,tmpRecv,5,0)!=5)
@@ -181,19 +181,19 @@ int receivePDM(char ** pdm)
     int pdmMaxSize = atoi(delim);
     delim = strtok(NULL,"`");
     int pdmCount = atoi(delim); //# of messages
-    pdm = malloc(pdmCount * sizeof(char *));
+    PDM = malloc(pdmCount * sizeof(char *));
     int i;
     for(i=0;i<pdmCount;i++)
     {
-        pdm[i] = malloc(pdmMaxSize * sizeof(char));
-        strcpy(pdm[i],"\0");
+        PDM[i] = malloc(pdmMaxSize * sizeof(char));
+        strcpy(PDM[i],"\0");
     }
 
     i=0;
     delim = strtok(NULL,"`");
     while(delim != NULL)
     {
-        strncpy(pdm[i],delim,pdmMaxSize);
+        strncpy(PDM[i],delim,pdmMaxSize);
         delim = strtok(NULL,"`");
         i++;
     }
