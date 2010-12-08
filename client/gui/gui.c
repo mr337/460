@@ -668,7 +668,6 @@ int handle_chat_input(char input)
     else if (message_index < MESSAGELENGTH) 
     {
         int charsleft = MESSAGELENGTH - message_index;
-        printf("%d", charsleft);
         if ( charsleft < 15 ) {
             wcolor_set(e_win.window, 9, NULL);
         } else if ( charsleft < 35 ) {
