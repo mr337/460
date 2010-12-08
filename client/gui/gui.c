@@ -15,6 +15,7 @@ CHAT_WINDOW u_wins[10];
 CHAT_WINDOW d_win;
 WINDOW *bar1;
 WINDOW *bar2;
+int yell_length;
 
 enum CHATMODE {
     normal,
@@ -462,10 +463,12 @@ int handle_input(char input)
         if ( input >= 97 && input <= 122 )
         {
             response_code = input - 97;
-            return YELL_RETURN;
+            if ( response_code < yell_length )
+                 return YELL_RETURN;
         } else if ( input >= 65 && input <= 90 ) {
             response_code = input - 65;
-            return YELL_RETURN;
+            if ( response_code < yell_length )
+                return YELL_RETURN;
         }
         return -1;
     }  else {
@@ -478,6 +481,7 @@ void show_yell_window(char ** message, int length)
 {
     int i;
     char line[50];
+    yell_length = length;
     memset(line,0,50);
     WINDOW *win = newwin(3 + length, 50, 5, 10);
     wmove(win, 1, 1);
@@ -655,10 +659,11 @@ int handle_chat_input(char input)
     else if (message_index < MESSAGELENGTH) 
     {
         int charsleft = MESSAGELENGTH - message_index;
+        printf("%d", charsleft);
         if ( charsleft < 15 ) {
-            wcolor_set(e_win.window, 8, NULL);
-        } else if ( charsleft < 10 ) {
             wcolor_set(e_win.window, 9, NULL);
+        } else if ( charsleft < 35 ) {
+            wcolor_set(e_win.window, 8, NULL);
         } else {
             wcolor_set(e_win.window, 2, NULL);
         }
@@ -681,9 +686,10 @@ int handle_chat_input(char input)
                 wrefresh(e_win.window);
             }
         }
+        return CHAT_UPDATE;
     }
 
-    if ( message_index >= MESSAGELENGTH)
+    if ( message_index >= MESSAGELENGTH - 1)
         return -1;
     else 
         return CHAT_UPDATE;

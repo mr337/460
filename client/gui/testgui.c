@@ -5,8 +5,6 @@
 int main(int argc, char *argv[])
 {    
     int q = 0;
-    printf("Something%*sSomething", 4, "George");
-    /*
     initialize_gui();
     initialize_windows();
     write_to_user_window(0, "This is a chat update and stuff\fThis is status update");
@@ -26,7 +24,7 @@ int main(int argc, char *argv[])
               write_to_transcript(message_buffer, 0);
         }
     }
-    cleanup_gui();*/
+    cleanup_gui();
     return 0;
 }
 
