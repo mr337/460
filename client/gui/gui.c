@@ -56,12 +56,15 @@ void write_line(char *message, int window_width, WINDOW *win)
     wrefresh(win);
 }
 
-void write_to_transcript(char *message, int check_for_gaudy)
-{
-    int count,i;
+void scrollToBottom() {    
     while (scrollDown()) {
         scroll_transcript_down();
     } 
+}
+void write_to_transcript(char *message, int check_for_gaudy)
+{
+    int count,i;
+    scrollToBottom(); 
     count = updateTranscript(message);
     for ( i = 0; i < count; i++ ) {
         if ( check_for_gaudy == 0 ) {
@@ -557,6 +560,11 @@ void delete_word() {
     }
 }
 
+void delete_line() {
+    while ( message_index > 0 )
+        backspace();
+}
+
 int handle_chat_input(char input)
 {
     if (iscntrl(input))
@@ -568,6 +576,8 @@ int handle_chat_input(char input)
             if ( message_index == 0 ) {
                 return -1;
             }
+            wattroff(t_win.window, A_REVERSE);
+            wattroff(e_win.window, A_REVERSE);
             werase(e_win.window);
             write_line(" ", e_win.w, e_win.window);
             wmove(e_win.window, 0,0);
@@ -576,9 +586,7 @@ int handle_chat_input(char input)
             message_index = 0;        
             if ( chat_contains_gaudy ) {
                 chat_contains_gaudy = 0;
-                chat_mode = gaudy;
-                wattroff(t_win.window, A_REVERSE);
-                wattroff(e_win.window, A_REVERSE);
+                chat_mode = normal;
                 return CHAT_GAUDY;
             } else {
                 return CHAT_BROADCAST;
@@ -597,7 +605,7 @@ int handle_chat_input(char input)
             if ( scrollDown() == 1) {                  
                 scroll_transcript_down();
             }  
-        } else if ( input == BACKSPACE ) {
+        } else if ( input == BACKSPACE || input == CTRL_H ) {
             return backspace();
         } else if ( input == CTRL_G ) {        
             if ( chat_mode == normal ) { 
@@ -614,6 +622,10 @@ int handle_chat_input(char input)
             return DS_REQUEST;
         } else if ( input == CTRL_W) {
             delete_word();
+        } else if ( input == CTRL_U) {
+            delete_line();
+        } else if ( input == CTRL_RB) {
+            scrollToBottom();            
         } else if ( input == CTRL_Y) {
             chat_mode = yell; 
             return YELL;
