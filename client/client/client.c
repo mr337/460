@@ -35,6 +35,8 @@ int pdmCount;
 
 //for connected stats
 time_t tStart, tEnd;
+//for scrolling
+time_t stStart, stEnd;
 
 
 int main(int argc, char * argv[])
@@ -123,6 +125,7 @@ int main(int argc, char * argv[])
 
     //start connected timer
     time(&tStart);
+    time(&stStart);
 
     for(;;)
     {
@@ -307,7 +310,9 @@ int sendReadyChat(char * msg, int status)
 void getStats() {
 
     time(&tEnd);
+    time(&stEnd);
     timeConnected=difftime(tEnd,tStart);
+    updateGuiTime(difftime(stEnd, stStart));
     char buf[240]; //80 witdh * 3 columns
     sprintf(buf, "Time Connected: %ld.%ldm\nSent Traffic:%ldK    Recv Traffic:%ldK\nKeys Typed: %ld", timeConnected/60, ((timeConnected%60)*10)/60, sentBytes/1000, recvBytes/1000,keysTyped);
     write_to_status_window(buf);
