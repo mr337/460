@@ -150,7 +150,7 @@ int main(int argc, char * argv[])
                             //chat saying BYE
                             //and blank message to clear window
                             ch.status=2;
-                            strcpy(ch.message,"  ");
+                            strcpy(ch.message,"Left the room ");
                             sendChat(&ch);
                             ch.status=0;
                             sprintf(ch.message,"%s left the chat.",cI->userName);
