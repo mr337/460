@@ -15,6 +15,7 @@ CHAT_WINDOW u_wins[10];
 CHAT_WINDOW d_win;
 WINDOW *bar1;
 WINDOW *bar2;
+WINDOW *yellwin;
 int yell_length;
 
 enum CHATMODE {
@@ -227,6 +228,13 @@ void write_to_user_window(int user_id, char * message)
 
     write_user_status(user_id, &message[status_index]);
     wrefresh(u_wins[user_id].window);
+    if ( chat_mode == yell ) {
+        touchwin(yellwin);
+        wrefresh(yellwin);
+    } else if ( chat_mode == deepsix ) {
+        touchwin(d_win.window);
+         wrefresh(d_win.window);
+    }
 }
 
 void write_to_window(char *message, int window_width, WINDOW *win)
@@ -484,6 +492,7 @@ void show_yell_window(char ** message, int length)
     yell_length = length;
     memset(line,0,50);
     WINDOW *win = newwin(3 + length, 50, 5, 10);
+    yellwin = win;
     wmove(win, 1, 1);
     wprintw(win, "---CHOOSE A MESSAGE BY THE LETTER NAME---");
     for ( i = 0; i < length; i++ ) {
