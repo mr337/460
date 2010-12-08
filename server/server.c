@@ -21,6 +21,7 @@ int checkDupUserName(char * name);
 void addMessage(char * msg);
 int checkRecipients();
 int getList(char *msg, int id);
+int removeVotes(int id);
 
 int maxUsers;
 int numUsers;
@@ -382,8 +383,12 @@ void* thread_proc(void *arg)
                     else if(ch->status == 5)
                     {
                         int vote = atoi(delim);
+                        char tmp[5];
                         dsVotesForMe[vote]=dsVotesForMe[vote]+1;
+                        sprintf(tmp,",%i",vote);
+                        strcat(dsVotes[id],tmp);
                         printf("Voted for %i\n",vote);
+                        printf("All votes: %s\n",dsVotes[id]);
 
                         free(token);
                         free(ch);
@@ -472,12 +477,15 @@ void* thread_proc(void *arg)
         }
     }
 
+    printf("USER IS EXITING\n");
+
 
     //quiting code
     close(sock);
     sem_wait(&lusers);
     numUsers--;
     dsVotesForMe[id] = 0;
+    removeVotes(id);
     strcpy(userNames[id], "\0");
     messageStatus[id] = -1;
     sem_post(&lusers);
@@ -610,3 +618,23 @@ int getList(char *msg, int id)
 
     return 1;
 }
+
+int removeVotes(int id)
+{
+    char votes[50] = {0};
+    strcpy(votes,dsVotes[id]);
+    if(strcmp(votes,"")!=0)
+    {
+        //breakup string and mark voes
+        char * p = strtok(votes,",");
+        while(p != NULL)
+        {
+            dsVotesForMe[atoi(p)] = dsVotesForMe[atoi(p)]-1;
+            p = strtok(NULL,",");
+        }
+    }
+
+    return 1;
+}
+
+
