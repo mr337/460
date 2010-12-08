@@ -64,7 +64,7 @@ void write_user_status(int user_id, char *message);
 char message_buffer[MESSAGELENGTH];
 int response_code; 
 void clear_buffer();
-void updateGuiTime(int timeInc);
+void updateGuiTime(double timeInc);
 void scrollToBottom();
 
 #endif

@@ -18,7 +18,8 @@ WINDOW *bar2;
 WINDOW *yellwin;
 int yell_length;
 int scrolled = 0;
-int time = 0;
+int resettimer = 0;
+double scrolltime = 0;
 
 enum CHATMODE {
     normal,
@@ -31,14 +32,16 @@ enum CHATMODE {
 int message_index = 0;
 int chat_contains_gaudy = 0;
 
-void updateGuiTime(int timeInc) {
-    if ( scrolled == 1) {
-        time += timeInc;
-        if ( timeInc >= 5 ) {
+void updateGuiTime(double timeInc) {
+    if ( scrolled == 1 && resettimer == 0) {
+        if ( timeInc - scrolltime >= 5 ) {
             scrollToBottom();
+            wrefresh(t_win.window);            
+            scrolled = 0;
         }
     } else {
-        time = 0;
+        resettimer = 0;
+        scrolltime = timeInc;
     }
 }
 
@@ -454,6 +457,7 @@ void write_to_status_window(char *message)
 
 int handle_input(char input)
 {
+    resettimer = 1;
     if ( input == '`' ) return -1;
     if ( chat_mode == normal || chat_mode == gaudy) {
         return handle_chat_input(input);
@@ -645,13 +649,11 @@ int handle_chat_input(char input)
                 write_to_window(line, t_win.w, t_win.window);                
                 wrefresh(t_win.window);
                 scrolled = 1;
-                time = 0;
             }
         } else if ( input == CTRL_N ) {
             if ( scrollDown() == 1) {                  
                 scroll_transcript_down();
                 scrolled = 1;
-                time = 0;
             }  
         } else if ( input == BACKSPACE || input == CTRL_H ) {
             return backspace();
