@@ -13,6 +13,8 @@ CHAT_WINDOW s_win;
 CHAT_WINDOW e_win;
 CHAT_WINDOW u_wins[10];
 CHAT_WINDOW d_win;
+WINDOW *bar1;
+WINDOW *bar2;
 
 enum CHATMODE {
     normal,
@@ -39,9 +41,13 @@ void touch_screen()
     touchwin(t_win.window);
     touchwin(p_win.window);
     touchwin(s_win.window);
+    touchwin(bar1);
+    touchwin(bar2);
     wrefresh(t_win.window);
     wrefresh(p_win.window);
     wrefresh(s_win.window);
+    wrefresh(bar1);
+    wrefresh(bar2);
     for ( i = 0; i < 10; i++ ) {
         touchwin(u_wins[i].window);
         wrefresh(u_wins[i].window);
@@ -284,17 +290,21 @@ void initialize_window(WINDOW *win, int window_height, int window_width)
 
 void initialize_colors()
 {
-    init_pair(1, COLOR_GREEN, COLOR_RED);
+    init_pair(1, COLOR_GREEN, COLOR_BLACK);
     init_pair(2, COLOR_GREEN, COLOR_BLUE);
     init_pair(3, COLOR_BLUE, COLOR_CYAN);
-    init_pair(4, COLOR_BLACK, COLOR_YELLOW);
-    init_pair(5, COLOR_BLACK, COLOR_WHITE);
+    init_pair(4, COLOR_WHITE, COLOR_BLUE);
+    init_pair(5, COLOR_BLACK, COLOR_CYAN);
+    init_pair(6, COLOR_WHITE, COLOR_WHITE);
+    init_pair(7, COLOR_RED, COLOR_WHITE);
+    init_pair(8, COLOR_YELLOW, COLOR_BLUE);
+    init_pair(9, COLOR_RED, COLOR_BLUE);
 }
 
 void initialize_windows()
 {
     int i, j;
-    initialize_colors();
+    initialize_colors();    
 
     t_win.w = 40;
     t_win.h = 23;
@@ -308,7 +318,7 @@ void initialize_windows()
     p_win.x = 40;
     p_win.y = 0;
     p_win.window = newwin(p_win.h, p_win.w, p_win.y, p_win.x);
-    p_win.color = 2;
+    p_win.color = 3;
 
     s_win.w = 40;
     s_win.h = 3;
@@ -329,10 +339,17 @@ void initialize_windows()
     d_win.x = 25;
     d_win.y = 5;
 
+    bar1 = newwin(1, 40, 3, 40);
+    bar2 = newwin(1, 40, 19, 40);    
+
     wcolor_set(t_win.window, t_win.color, NULL);
     wcolor_set(p_win.window, p_win.color, NULL);
     wcolor_set(s_win.window, s_win.color, NULL);
     wcolor_set(e_win.window, e_win.color, NULL);
+    wbkgd(bar1, COLOR_PAIR(6));
+    wbkgd(bar2, COLOR_PAIR(6));
+    wrefresh(bar1);
+    wrefresh(bar2);
 
     initialize_window(t_win.window, t_win.h, t_win.w);
     initialize_window(p_win.window, p_win.h, p_win.w);
@@ -507,7 +524,7 @@ void show_eject_window(char *message)
 
 void show_lurk_window() {
     WINDOW *lwin = newwin(e_win.h, e_win.w, e_win.y, e_win.x);
-    wbkgd(lwin, COLOR_PAIR(5));
+    wbkgd(lwin, COLOR_PAIR(7));
     wprintw(lwin, "Lurking...        [Press Ctrl-L to quit lurking or Ctrl-Q to quit the program.]");
     wrefresh(lwin);
     chat_mode = lurk;
@@ -592,6 +609,7 @@ int handle_chat_input(char input)
                 return CHAT_BROADCAST;
             }
         } else if ( input == CTRL_L ) {
+            show_lurk_window();
             return CHAT_LURK;
         } else if ( input == CTRL_P ) {
             if ( scrollUp() == 1) {
@@ -634,8 +652,17 @@ int handle_chat_input(char input)
         }
     }
 
-    else if (message_index < MESSAGELENGTH)        
+    else if (message_index < MESSAGELENGTH) 
     {
+        int charsleft = MESSAGELENGTH - message_index;
+        if ( charsleft < 15 ) {
+            wcolor_set(e_win.window, 8, NULL);
+        } else if ( charsleft < 10 ) {
+            wcolor_set(e_win.window, 9, NULL);
+        } else {
+            wcolor_set(e_win.window, 2, NULL);
+        }
+            
         if ( message_index == MESSAGELENGTH - 1 )
         {
             message_buffer[message_index++] = '\0';
@@ -651,11 +678,15 @@ int handle_chat_input(char input)
                 write_to_windowh(message_buffer + (message_index - e_win.w),
                         e_win.w, e_win.window);
                 scrollok(e_win.window, 0);
+                wrefresh(e_win.window);
             }
         }
     }
 
-    return CHAT_UPDATE;
+    if ( message_index >= MESSAGELENGTH)
+        return -1;
+    else 
+        return CHAT_UPDATE;
 }
 
 void scroll_transcript_down()
